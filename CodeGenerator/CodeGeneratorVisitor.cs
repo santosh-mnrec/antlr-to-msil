@@ -57,7 +57,7 @@ namespace AntlrCodeGenerator
             AppendCodeLine(fn);
 
             var code = header + _result.GetCode() + "\n}";
-            File.WriteAllText("test.il", code);
+            File.WriteAllText(@"out\test.il", code);
             return string.Empty;
         }
 
