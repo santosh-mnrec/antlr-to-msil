@@ -44,7 +44,7 @@ namespace AntlrCodeGenerator
           //  base.SetScope(scopeNext, functions);
 
 
-            // var ret = Value.VOID;
+             var ret = Value.VOID;
             // try
             // {
             //  // base.Visit(this.block);
