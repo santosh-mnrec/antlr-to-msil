@@ -44,15 +44,15 @@ namespace AntlrCodeGenerator
           //  base.SetScope(scopeNext, functions);
 
 
-            var ret = Value.VOID;
-            try
-            {
-             // base.Visit(this.block);
-            }
-            catch (ReturnValue returnValue)
-            {
-                ret = returnValue.value;
-            }
+            // var ret = Value.VOID;
+            // try
+            // {
+            //  // base.Visit(this.block);
+            // }
+            // catch (ReturnValue returnValue)
+            // {
+            //     ret = returnValue.value;
+            // }
 
             return ret;
         }
