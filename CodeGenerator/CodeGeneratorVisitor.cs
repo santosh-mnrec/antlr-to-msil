@@ -45,7 +45,6 @@ namespace AntlrCodeGenerator
             AppendCodeLine(" .entrypoint");
             header = _result.GetCode();
 
-
         }
         public override string VisitParse([NotNull] ParseContext context)
         {
@@ -66,7 +65,6 @@ namespace AntlrCodeGenerator
         public override string VisitPrintlnFunctionCall([NotNull] PrintlnFunctionCallContext context)
         {
 
-
             AppendCodeLine(Visit(context.expression()));
             //if identifier is a string
             if (context.expression().GetText().Contains("\""))
@@ -77,7 +75,6 @@ namespace AntlrCodeGenerator
             {
                 AppendCodeLine("call void [mscorlib]System.Console::WriteLine(int32)");
             }
-
 
             return "";
         }
@@ -111,9 +108,6 @@ namespace AntlrCodeGenerator
                 variableDefs.Add(varName);
             AppendCodeLine(this.Visit(context.expression()));
             AppendCodeLine("stloc " + varName);
-
-
-
 
             return "";
 
@@ -160,7 +154,6 @@ namespace AntlrCodeGenerator
 
             fn += _result.GetCode();
 
-
             return "";
 
         }
@@ -185,7 +178,6 @@ namespace AntlrCodeGenerator
         public override string VisitIdentifierFunctionCall(IdentifierFunctionCallContext ctx)
         {
 
-
             Log("VisitIdentifierFunctionCall");
             if (ctx.exprList() != null)
             {
@@ -193,16 +185,6 @@ namespace AntlrCodeGenerator
                 //count args
                 int count = ctx.exprList().expression().Length;
                 //load args
-                for (int i = 0; i < count; i++)
-                {
-
-                    //AppendCodeLine("ldarg " + i);
-                    //add variable to variableDefs
-                    //  variableDefs.Add(ctx.exprList().expression()[i].GetText());
-
-                    // AppendCodeLine(Visit(ctx.exprList().expression()[i]));
-                }
-
 
                 AppendCodeLine(Visit(ctx.exprList()));
 
@@ -218,7 +200,6 @@ namespace AntlrCodeGenerator
         }
 
         //visit add expression
-
 
         public override string VisitStringExpression([NotNull] StringExpressionContext context)
         {
@@ -249,7 +230,6 @@ namespace AntlrCodeGenerator
             }
 
             return "";
-
 
         }
 
@@ -301,10 +281,7 @@ namespace AntlrCodeGenerator
 
             return "";
 
-
-
         }
-
 
         public override string VisitNumberExpression(NumberExpressionContext ctx)
         {
@@ -312,7 +289,6 @@ namespace AntlrCodeGenerator
             AppendCodeLine("ldc.i4 " + ctx.Number().GetText());
 
             return "";
-
 
         }
         //visit for loop
@@ -336,7 +312,6 @@ namespace AntlrCodeGenerator
             string start = context.expression(0).GetText();
 
             AppendCodeLine("ldc.i4 " + start);
-
 
             //emitlocal
             AppendCodeLine(EmitLocals(context.Identifier().GetText()));
@@ -365,10 +340,6 @@ namespace AntlrCodeGenerator
             AppendCodeLine("clt ");
 
             AppendCodeLine("brtrue " + labelTo);
-
-
-
-
 
             return "";
 
