@@ -64,15 +64,18 @@ namespace AntlrCodeGenerator
         public override string VisitPrintlnFunctionCall([NotNull] PrintlnFunctionCallContext context)
         {
 
-            if (context.expression() != null)
+
+            AppendCodeLine(Visit(context.expression()));
+            //if identifier is a string
+            if (context.expression().GetText().Contains("\""))
             {
-                AppendCodeLine(Visit(context.expression()));
-                AppendCodeLine("call void [mscorlib]System.Console::WriteLine(int32)");
+                AppendCodeLine("call void [mscorlib]System.Console::WriteLine(string)");
             }
             else
             {
-                AppendCodeLine("call void [mscorlib]System.Console::WriteLine()");
+                AppendCodeLine("call void [mscorlib]System.Console::WriteLine(int32)");
             }
+
 
             return "";
         }
@@ -133,7 +136,7 @@ namespace AntlrCodeGenerator
             AppendCodeLine(s + "{");
             AppendCodeLine(EmitLocals(GetParameters(@params.ToList())));
             //check context length
-            
+
             if (context.idList()?.Identifier()?.Length > 0)
             {
                 for (var i = 0; i < context.idList()?.Identifier()?.Length; i++)
@@ -143,7 +146,7 @@ namespace AntlrCodeGenerator
 
                 }
             }
-            
+
             AppendCodeLine(Visit(context.block()) + "ret");
             AppendCodeLine("}");
 
