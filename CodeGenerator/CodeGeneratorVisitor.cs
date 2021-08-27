@@ -37,8 +37,8 @@ namespace AntlrCodeGenerator
         public CodeGeneratorVisitor()
         {
             AppendCodeLine(".assembly extern mscorlib\n{\n}\n");
-            AppendCodeLine(".assembly " + "test" + "\n{\n}\n\n.module " + "test" + ".exe\n");
-            AppendCodeLine(".class private auto ansi beforefieldinit test extends [System.Runtime]System.Object {");
+            AppendCodeLine(".assembly " + "Program" + "\n{\n}\n\n.module " + "test" + ".exe\n");
+            AppendCodeLine(".class private auto ansi beforefieldinit Program extends [System.Runtime]System.Object {");
             AppendCodeLine(" .method private hidebysig static void  Main(string[] args) cil managed {");
             AppendCodeLine(" .entrypoint");
             header = _result.GetCode();
@@ -132,14 +132,18 @@ namespace AntlrCodeGenerator
 
             AppendCodeLine(s + "{");
             AppendCodeLine(EmitLocals(GetParameters(@params.ToList())));
-
-            for (var i = 0; i < context.idList().Identifier().Length; i++)
+            //check context length
+            
+            if (context.idList()?.Identifier()?.Length > 0)
             {
-                //load arg
-                _scopeList.Add(context.idList().Identifier()[i].GetText());
-                //   AppendCodeLine("ldarg " +context.idList().Identifier()[i].GetText());
-                //store arg
+                for (var i = 0; i < context.idList()?.Identifier()?.Length; i++)
+                {
+                    //load arg
+                    _scopeList.Add(context.idList().Identifier()[i].GetText());
+
+                }
             }
+            
             AppendCodeLine(Visit(context.block()) + "ret");
             AppendCodeLine("}");
 
@@ -175,10 +179,24 @@ namespace AntlrCodeGenerator
             if (ctx.exprList() != null)
             {
 
+                //count args
+                int count = ctx.exprList().expression().Length;
+                //load args
+                for (int i = 0; i < count; i++)
+                {
+
+                    AppendCodeLine("ldarg " + i);
+                    AppendCodeLine(Visit(ctx.exprList().expression()[i]));
+                }
+
 
                 AppendCodeLine(Visit(ctx.exprList()));
 
                 AppendCodeLine($"call  void test::{ctx.Identifier().GetText()}(int32,int32)");
+            }
+            else
+            {
+                AppendCodeLine($"call  void Program::{ctx.Identifier().GetText()}()");
             }
 
             return "";
@@ -188,6 +206,12 @@ namespace AntlrCodeGenerator
         //visit add expression
 
 
+        public override string VisitStringExpression([NotNull] StringExpressionContext context)
+        {
+            //load string
+            AppendCodeLine("ldstr " + context.GetText());
+            return "";
+        }
         public override string VisitAddExpression([NotNull] AddExpressionContext context)
         {
 
@@ -282,6 +306,7 @@ namespace AntlrCodeGenerator
 
             Log("VisitForStatement");
             System.Console.WriteLine(context.GetText());
+            AppendCodeLine(Visit(context.Identifier()));
 
             string varName = context.Identifier().GetText();
             string start = context.expression(0).GetText();
