@@ -113,11 +113,9 @@ namespace AntlrCodeGenerator
             return "";
 
         }
-        bool isFunction = false;
         //vist function declration
         public override string VisitFunctionDecl(CompileParser.FunctionDeclContext context)
         {
-            isFunction = true;
             main += _result.GetCode();
 
             var @params = context.idList() != null ? context.idList().Identifier() : new List<ITerminalNode>().ToArray();
@@ -148,7 +146,6 @@ namespace AntlrCodeGenerator
             fn += _result.GetCode();
 
 
-            isFunction = false;
             return "";
 
         }
@@ -265,14 +262,68 @@ namespace AntlrCodeGenerator
         {
             Log("VisitNumberExpression");
             AppendCodeLine("ldc.i4 " + ctx.Number().GetText());
-            // if(_scopeList.Contains(ctx.Number().GetText())){
-            //     AppendCodeLine("ldloc " + ctx.Number().GetText());
-            // }
+
             return "";
 
 
         }
+        //visit for loop
+        int _labelCount = 0;
+        string labelPrev = "";
 
+        private string MakeLabel(int label)
+        {
+            return string.Format("IL_{0:x4}", label);
+        }
+        public override string VisitForStatement([NotNull] ForStatementContext context)
+        {
+
+            //generate for lopp for (int x = 0; x < 10; i++) {Console.WriteLine(x);}
+
+            Log("VisitForStatement");
+            System.Console.WriteLine(context.GetText());
+
+            string varName = context.Identifier().GetText();
+            string start = context.expression(0).GetText();
+
+            AppendCodeLine("ldc.i4 " + start);
+
+
+            //emitlocal
+            AppendCodeLine(EmitLocals(context.Identifier().GetText()));
+            _result.InitializeVariable(varName, start);
+            //load start value
+            labelPrev = MakeLabel(_labelCount);
+            _labelCount++;
+            AppendCodeLine("br " + labelPrev);
+            string labelTo = MakeLabel(_labelCount);
+            _labelCount++;
+            _labelCount++;
+
+            //labeto
+            AppendCodeLine(labelTo + ":");
+            AppendCodeLine("ldloc " + varName);
+            AppendCodeLine("ldc.i4 1 ");
+
+            AppendCodeLine("add");
+            AppendCodeLine("stloc " + varName);
+            //statemtn
+            AppendCodeLine(Visit(context.block()));
+            AppendCodeLine(labelPrev + ":");
+            AppendCodeLine("ldloc " + varName);
+            AppendCodeLine(Visit(context.expression(1)));
+            //compare
+            AppendCodeLine("clt ");
+
+            AppendCodeLine("brtrue " + labelTo);
+
+
+
+
+
+            return "";
+
+        }
 
         #region Helper
         public string[] GetParameters(List<ITerminalNode> parameters)
