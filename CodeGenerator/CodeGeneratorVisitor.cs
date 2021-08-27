@@ -195,7 +195,7 @@ namespace AntlrCodeGenerator
 
                 AppendCodeLine(Visit(ctx.exprList()));
 
-                AppendCodeLine($"call  void test::{ctx.Identifier().GetText()}(int32,int32)");
+                AppendCodeLine($"call  void Program::{ctx.Identifier().GetText()}(int32,int32)");
             }
             else
             {
