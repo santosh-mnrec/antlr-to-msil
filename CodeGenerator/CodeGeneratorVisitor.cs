@@ -403,6 +403,47 @@ namespace AntlrCodeGenerator
 
         }
 
+        public override string VisitCompExpression([NotNull] CompExpressionContext context)
+        {
+           //switch case
+            Log("VisitCompExpression");
+            if (context.op.Text == "==")
+            {
+                AppendCodeLine(Visit(context.expression(0)));
+                AppendCodeLine(Visit(context.expression(1)));
+                AppendCodeLine(OpCodes.Ceq);
+            }
+            if (context.op.Text == "!=")
+            {
+                AppendCodeLine(Visit(context.expression(0)));
+                AppendCodeLine(Visit(context.expression(1)));
+                AppendCodeLine(OpCodes.Ceq);
+                AppendCodeLine(OpCodes.LdInt4 + "0");
+                AppendCodeLine(OpCodes.Ceq);
+            }
+            if (context.op.Text == ">")
+            {
+                AppendCodeLine(Visit(context.expression(0)));
+                AppendCodeLine(Visit(context.expression(1)));
+                AppendCodeLine(OpCodes.Cgt);
+            }
+            if (context.op.Text == "<")
+            {
+                AppendCodeLine(Visit(context.expression(0)));
+                AppendCodeLine(Visit(context.expression(1)));
+                AppendCodeLine(OpCodes.Clt);
+            }
+            if (context.op.Text == ">=")
+            {
+                AppendCodeLine(Visit(context.expression(0)));
+                AppendCodeLine(Visit(context.expression(1)));
+                AppendCodeLine(OpCodes.Cgt_Un);
+                AppendCodeLine(OpCodes.LdInt4 + "0");
+                AppendCodeLine(OpCodes.Ceq);
+            }
+            return "";
+        }
+
         #region Helper
         public string[] GetParameters(List<ITerminalNode> parameters)
         {
