@@ -24,7 +24,9 @@ namespace AntlrCodeGenerator
         //scopelist
         public List<string> _scopeList = new List<string>();
         private void AppendCodeLine(string code) => _result.Append(code + Environment.NewLine);
-
+        //local function variables
+        private List<string> _localFunctionVariables = new List<string>();
+        private void AppendLocalFunctionVariable(string variable) => _localFunctionVariables.Add(variable);
 
         private void Log(string message)
         {
@@ -135,7 +137,13 @@ namespace AntlrCodeGenerator
 
             AppendCodeLine(s + "{");
             AppendCodeLine(EmitLocals(GetParameters(@params.ToList())));
-            //check context length
+            //emit arg to stack
+            for (int i = 0; i < @params.Length; ++i)
+            {
+                //add local function variable
+                AppendLocalFunctionVariable(@params[i].GetText());
+
+            }
 
             if (context.idList()?.Identifier()?.Length > 0)
             {
@@ -190,9 +198,9 @@ namespace AntlrCodeGenerator
 
                     //AppendCodeLine("ldarg " + i);
                     //add variable to variableDefs
-                  //  variableDefs.Add(ctx.exprList().expression()[i].GetText());
-                    
-                   // AppendCodeLine(Visit(ctx.exprList().expression()[i]));
+                    //  variableDefs.Add(ctx.exprList().expression()[i].GetText());
+
+                    // AppendCodeLine(Visit(ctx.exprList().expression()[i]));
                 }
 
 
@@ -279,7 +287,17 @@ namespace AntlrCodeGenerator
         public override string VisitIdentifierExpression(IdentifierExpressionContext ctx)
         {
             Log("VisitIdentifierExpression");
-            AppendCodeLine("ldloc " + ctx.Identifier().GetText());
+            if (_localFunctionVariables.Contains(ctx.Identifier().GetText()))
+            {
+                //loar arg
+                AppendCodeLine("ldarg " + ctx.Identifier().GetText());
+                //remove the variable from the local function variables
+                _localFunctionVariables.Remove(ctx.Identifier().GetText());
+            }
+            else
+            {
+                AppendCodeLine("ldloc " + ctx.Identifier().GetText());
+            }
 
             return "";
 
