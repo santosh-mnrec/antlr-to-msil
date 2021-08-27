@@ -1,7 +1,5 @@
-// Root non-terminal symbol A program is a bunch of declarations followed by a bunch of statements
-// The Java code outputs the necessary NASM code around these declarations
-
 grammar Compile;
+
 
 @members {}
 @header {
@@ -10,13 +8,13 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-}
+} 
 
 parse: block EOF;
 
-block: ( statement | functionDecl)* ('return' expression)?;
+block: ( statement | functionDecl)* ('return' expression ';')? ;
 
-statement: assignment ';' | functionCall ';' | forStatement;
+statement: assignment ';' | functionCall ';' | forStatement | ifStatement;
 
 assignment: Identifier indexes? '=' expression;
 
@@ -28,7 +26,21 @@ functionDecl: 'func' Identifier '(' idList? ')' '{' block '}';
 
 forStatement:
 	'for' Identifier '=' expression 'to' expression '{' block '}';
+ifStatement
+ : ifStat elseIfStat* elseStat?
+ ;
 
+ifStat
+ : If expression '{' block '}'
+ ;
+
+elseIfStat
+ : Else If expression '{' block '}'
+ ;
+
+elseStat
+ : Else '{' block '}'
+ ;
 idList: Identifier ( ',' Identifier)*;
 
 exprList: expression ( ',' expression)*;
@@ -36,6 +48,8 @@ exprList: expression ( ',' expression)*;
 expression:
 	 expression op = ('*' | '/' | '%') expression	#multExpression
 	| expression op = ('+' | '-') expression		#addExpression
+	| expression op=( '>=' | '<=' | '>' | '<' ) expression #compExpression
+ 	|expression op=( '==' | '!=' ) expression       #eqExpression
 	| Number										#numberExpression
 	| functionCall indexes?							#functionCallExpression
 	| Identifier indexes?							#identifierExpression
@@ -50,7 +64,8 @@ Println: 'println';
 Input: 'input';
 Add: '+';
 Subtract: '-';
-
+If:'if';
+Else:'else';
 
 Bool: 'true' | 'false';
 

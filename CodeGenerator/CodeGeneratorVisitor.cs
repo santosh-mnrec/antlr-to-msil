@@ -5,6 +5,7 @@ using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
+using AntlrCodeGenerator.CodeGenerator;
 using static CompileParser;
 
 namespace AntlrCodeGenerator
@@ -107,7 +108,7 @@ namespace AntlrCodeGenerator
             if (!variableDefs.Contains(varName))
                 variableDefs.Add(varName);
             AppendCodeLine(this.Visit(context.expression()));
-            AppendCodeLine("stloc " + varName);
+            AppendCodeLine(OpCodes.StLoc + varName);
 
             return "";
 
@@ -188,7 +189,7 @@ namespace AntlrCodeGenerator
 
                 AppendCodeLine(Visit(ctx.exprList()));
 
-                AppendCodeLine($"call  void Program::{ctx.Identifier().GetText()}(int32,int32)");
+                AppendCodeLine($"call  void Program::{ctx.Identifier().GetText()}({GetFunctionArguments(ctx)})");
             }
             else
             {
@@ -196,6 +197,24 @@ namespace AntlrCodeGenerator
             }
 
             return "";
+
+        }
+        //get input arguements
+        public string GetFunctionArguments(IdentifierFunctionCallContext context)
+        {
+            string s = "";
+            if (context.exprList() != null)
+            {
+                for (int i = 0; i < context.exprList().expression().Length; i++)
+                {
+                    s += "int32 ";
+                    if (i < context.exprList().expression().Length - 1)
+
+                        s += ",";
+
+                }
+            }
+            return s;
 
         }
 
@@ -217,7 +236,7 @@ namespace AntlrCodeGenerator
                 AppendCodeLine(Visit(context.expression(0)));
 
                 AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine("add");
+                AppendCodeLine(OpCodes.Add);
 
             }
             if (context.op.Text == "-")
@@ -226,7 +245,7 @@ namespace AntlrCodeGenerator
                 Log("VisitAddExpression");
                 AppendCodeLine(Visit(context.expression(0)));
                 AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine("sub");
+                AppendCodeLine(OpCodes.Sub);
             }
 
             return "";
@@ -241,7 +260,7 @@ namespace AntlrCodeGenerator
                 Log("VisitAddExpression");
                 AppendCodeLine(Visit(context.expression(0)));
                 AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine("mul");
+                AppendCodeLine(OpCodes.Mul);
             }
             if (context.op.Text == "/")
             {
@@ -249,7 +268,7 @@ namespace AntlrCodeGenerator
                 Log("VisitAddExpression");
                 AppendCodeLine(Visit(context.expression(0)));
                 AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine("div");
+                AppendCodeLine(OpCodes.Div);
             }
 
             return "";
@@ -270,13 +289,13 @@ namespace AntlrCodeGenerator
             if (_localFunctionVariables.Contains(ctx.Identifier().GetText()))
             {
                 //loar arg
-                AppendCodeLine("ldarg " + ctx.Identifier().GetText());
+                AppendCodeLine(OpCodes.LdArg + ctx.Identifier().GetText());
                 //remove the variable from the local function variables
                 _localFunctionVariables.Remove(ctx.Identifier().GetText());
             }
             else
             {
-                AppendCodeLine("ldloc " + ctx.Identifier().GetText());
+                AppendCodeLine(OpCodes.LdLoc + ctx.Identifier().GetText());
             }
 
             return "";
@@ -286,7 +305,7 @@ namespace AntlrCodeGenerator
         public override string VisitNumberExpression(NumberExpressionContext ctx)
         {
             Log("VisitNumberExpression");
-            AppendCodeLine("ldc.i4 " + ctx.Number().GetText());
+            AppendCodeLine(OpCodes.LdInt4 + ctx.Number().GetText());
 
             return "";
 
@@ -311,7 +330,7 @@ namespace AntlrCodeGenerator
             string varName = context.Identifier().GetText();
             string start = context.expression(0).GetText();
 
-            AppendCodeLine("ldc.i4 " + start);
+            AppendCodeLine(OpCodes.LdInt4 + start);
 
             //emitlocal
             AppendCodeLine(EmitLocals(context.Identifier().GetText()));
@@ -319,17 +338,17 @@ namespace AntlrCodeGenerator
             //load start value
             labelPrev = MakeLabel(_labelCount);
             _labelCount++;
-            AppendCodeLine("br " + labelPrev);
+            AppendCodeLine(OpCodes.Br + labelPrev);
             string labelTo = MakeLabel(_labelCount);
             _labelCount++;
             _labelCount++;
 
             //labeto
             AppendCodeLine(labelTo + ":");
-            AppendCodeLine("ldloc " + varName);
+            AppendCodeLine(OpCodes.LdLoc + varName);
             AppendCodeLine("ldc.i4 1 ");
 
-            AppendCodeLine("add");
+            AppendCodeLine(OpCodes.Add);
             AppendCodeLine("stloc " + varName);
             //statemtn
             AppendCodeLine(Visit(context.block()));
@@ -342,6 +361,45 @@ namespace AntlrCodeGenerator
             AppendCodeLine("brtrue " + labelTo);
 
             return "";
+
+        }
+
+        public override string VisitIfStatement([NotNull] IfStatementContext context)
+        {
+            Log("VisitIfStatement");
+            //generate IL  code for if else if else
+
+
+            string labelTo = MakeLabel(_labelCount);
+            _labelCount++;
+            string labelElse = MakeLabel(_labelCount);
+            _labelCount++;
+            string labelEnd = MakeLabel(_labelCount);
+            _labelCount++;
+            AppendCodeLine(Visit(context.ifStat().expression()));
+            AppendCodeLine(OpCodes.Brfalse + labelElse);
+            AppendCodeLine(Visit(context.ifStat().block()));
+            AppendCodeLine(OpCodes.Br + labelEnd);
+            AppendCodeLine(labelElse + ":");
+            //check all else if
+            if (context.elseIfStat() != null)
+            {
+                foreach (var elseIf in context.elseIfStat())
+                {
+                    AppendCodeLine(Visit(elseIf));
+                }
+            }
+            //check else
+            if (context.elseStat() != null)
+            {
+                AppendCodeLine(Visit(context.elseStat().block()));
+            }
+            AppendCodeLine(labelEnd + ":");
+
+
+            return "";
+
+
 
         }
 

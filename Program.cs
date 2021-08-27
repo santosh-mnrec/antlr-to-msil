@@ -21,7 +21,7 @@ namespace AntlrCodeGenerator
 
             var tree = parser.parse();
             Scope scope = new Scope();
-            var functions = new Dictionary<string, FunctionDefinition>();
+           // var functions = new Dictionary<string, FunctionDefinition>();
 
 
             var codegen = new CodeGeneratorVisitor();
