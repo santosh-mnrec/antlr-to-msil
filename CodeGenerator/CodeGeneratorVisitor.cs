@@ -188,8 +188,11 @@ namespace AntlrCodeGenerator
                 for (int i = 0; i < count; i++)
                 {
 
-                    AppendCodeLine("ldarg " + i);
-                    AppendCodeLine(Visit(ctx.exprList().expression()[i]));
+                    //AppendCodeLine("ldarg " + i);
+                    //add variable to variableDefs
+                  //  variableDefs.Add(ctx.exprList().expression()[i].GetText());
+                    
+                   // AppendCodeLine(Visit(ctx.exprList().expression()[i]));
                 }
 
 
