@@ -366,46 +366,79 @@ namespace AntlrCodeGenerator
 
         public override string VisitIfStatement([NotNull] IfStatementContext context)
         {
+
+
+
             Log("VisitIfStatement");
-            //generate IL  code for if else if else
-
-
-            string labelTo = MakeLabel(_labelCount);
-            _labelCount++;
-            string labelElse = MakeLabel(_labelCount);
-            _labelCount++;
+            //lable for end
             string labelEnd = MakeLabel(_labelCount);
             _labelCount++;
+
+            string labelIf = MakeLabel(_labelCount);
+            _labelCount++;
+            //lable for else if
+            string labelElseIf = MakeLabel(_labelCount);
+            _labelCount++;
+            //lable for else
+            string labelElse = MakeLabel(_labelCount);
+            _labelCount++;
+
+
+
+
+
             AppendCodeLine(Visit(context.ifStat().expression()));
-            AppendCodeLine(OpCodes.Brfalse + labelElse);
+            AppendCodeLine(OpCodes.Brfalse + labelElseIf);
+
             AppendCodeLine(Visit(context.ifStat().block()));
             AppendCodeLine(OpCodes.Br + labelEnd);
-            AppendCodeLine(labelElse + ":");
-            //check all else if
+
+
+            //else if
             if (context.elseIfStat() != null)
             {
-                foreach (var elseIf in context.elseIfStat())
+                AppendCodeLine(labelElseIf + ":");
+                //for all else if condition
+                foreach (var item in context.elseIfStat())
                 {
-                    AppendCodeLine(Visit(elseIf));
+                    AppendCodeLine(Visit(item.expression()));
+                    AppendCodeLine(OpCodes.Brfalse + labelEnd);
+
+                    AppendCodeLine(Visit(item.block()));
+                    //exit loop
+
                 }
+
             }
-            //check else
+            //else
             if (context.elseStat() != null)
             {
+                AppendCodeLine(labelElse + ":");
                 AppendCodeLine(Visit(context.elseStat().block()));
             }
+
             AppendCodeLine(labelEnd + ":");
+
+
 
 
             return "";
 
 
 
+
+
+
+        }
+
+        private void AppendCodeLine(object ret)
+        {
+            throw new NotImplementedException();
         }
 
         public override string VisitCompExpression([NotNull] CompExpressionContext context)
         {
-           //switch case
+            //switch case
             Log("VisitCompExpression");
             if (context.op.Text == "==")
             {
@@ -443,7 +476,26 @@ namespace AntlrCodeGenerator
             }
             return "";
         }
+        public override string VisitEqExpression([NotNull] EqExpressionContext context)
+        {
 
+            Log("VisitEqExpression");
+            if (context.op.Text == "==")
+            {
+                AppendCodeLine(Visit(context.expression(0)));
+                AppendCodeLine(Visit(context.expression(1)));
+                AppendCodeLine(OpCodes.Ceq);
+            }
+            if (context.op.Text == "!=")
+            {
+                AppendCodeLine(Visit(context.expression(0)));
+                AppendCodeLine(Visit(context.expression(1)));
+                AppendCodeLine(OpCodes.Ceq);
+                AppendCodeLine(OpCodes.LdInt4 + "0");
+                AppendCodeLine(OpCodes.Ceq);
+            }
+            return "";
+        }
         #region Helper
         public string[] GetParameters(List<ITerminalNode> parameters)
         {

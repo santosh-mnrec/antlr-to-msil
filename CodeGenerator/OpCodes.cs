@@ -5,7 +5,7 @@ namespace AntlrCodeGenerator.CodeGenerator
         public static string Add = "add ";
         public static string And = "and ";
         public static string Br = "br ";
-        public static string Brfalse = "bne.un.s ";
+        public static string Brfalse = "brfalse ";
         public static string Brtrue = "brtrue ";
         public static string Call = "call ";
         public static string Callvirt = "callvirt ";
@@ -21,6 +21,7 @@ namespace AntlrCodeGenerator.CodeGenerator
         public static string Ceq = "ceq";
         public static string Cgt = "cgt";
         public static string Cgt_Un = "cgt.un";
+        public static string Ret="ret";
     }
 
 }
