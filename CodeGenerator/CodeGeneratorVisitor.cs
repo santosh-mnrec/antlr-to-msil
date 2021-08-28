@@ -370,64 +370,43 @@ namespace AntlrCodeGenerator
 
 
             Log("VisitIfStatement");
-            //lable for end
+            //generate lable for if elseif* else
+            string labelTo = MakeLabel(_labelCount);
+            _labelCount++;
+            string labelElse = MakeLabel(_labelCount);
+            _labelCount++;
+            string labelElseIf = MakeLabel(_labelCount);
+            _labelCount++;
             string labelEnd = MakeLabel(_labelCount);
             _labelCount++;
 
-            string labelIf = MakeLabel(_labelCount);
-            _labelCount++;
-            //lable for else if
-            string labelElseIf = MakeLabel(_labelCount);
-            _labelCount++;
-            //lable for else
-            string labelElse = MakeLabel(_labelCount);
-            _labelCount++;
-
-
-
-
-
+            //emit if
             AppendCodeLine(Visit(context.ifStat().expression()));
-            AppendCodeLine(OpCodes.Brfalse + labelElseIf);
-
+            AppendCodeLine("brfalse " + labelElseIf);
             AppendCodeLine(Visit(context.ifStat().block()));
-            AppendCodeLine(OpCodes.Br + labelEnd);
-
-
-            //else if
-            if (context.elseIfStat() != null)
+            AppendCodeLine("br " + labelEnd);
+            //emit all child of elseif
+            AppendCodeLine(labelElseIf + ":");
+            foreach (var item in context.elseIfStat())
             {
-                AppendCodeLine(labelElseIf + ":");
-                //for all else if condition
-                foreach (var item in context.elseIfStat())
-                {
-                    AppendCodeLine(Visit(item.expression()));
-                    AppendCodeLine(OpCodes.Brfalse + labelEnd);
-
-                    AppendCodeLine(Visit(item.block()));
-                    //exit loop
-
-                }
-
+                //check expression
+                AppendCodeLine(Visit(item.expression()));
+                AppendCodeLine("brfalse " + labelElse);
+                AppendCodeLine(Visit(item.block()));
+                AppendCodeLine("br " + labelEnd);
+                
             }
-            //else
+            //emit else
+            AppendCodeLine(labelElse + ":");
             if (context.elseStat() != null)
             {
-                AppendCodeLine(labelElse + ":");
-                AppendCodeLine(Visit(context.elseStat().block()));
+                AppendCodeLine(Visit(context.elseStat()));
             }
-
+            //emit end
             AppendCodeLine(labelEnd + ":");
 
-
-
-
             return "";
-
-
-
-
-
+           
 
         }
 
