@@ -17,19 +17,15 @@ namespace AntlrCodeGenerator
         //public readonly ILBuilder mainTarget = ILBuilder.Create();
 
         private CodeBuilder _result = new CodeBuilder();
-     
+
         public SymbolTable variableDefs = new SymbolTable();
-       
+
         //scopelist
         public List<string> _scopeList = new List<string>();
         //local function variables
         private List<string> _localFunctionVariables = new List<string>();
         private void AppendLocalFunctionVariable(string variable) => _localFunctionVariables.Add(variable);
 
-        private void Log(string message)
-        {
-            Console.WriteLine(message);
-        }
 
         string main = "";
         string fn = "";
@@ -47,9 +43,7 @@ namespace AntlrCodeGenerator
         public override string VisitParse([NotNull] ParseContext context)
         {
 
-            Log("Entering Parse");
             _result.AppendCodeLine(Visit(context.block()));
-            Log("Ex Parse");
             _result.AppendCodeLine(main);
             _result.AppendCodeLine("ret}");
 
@@ -80,13 +74,11 @@ namespace AntlrCodeGenerator
         {
             foreach (var fdx in context.functionDecl())
             {
-                Log("VisitFunctionDecl");
                 _result.Append(this.Visit(fdx));
 
             }
             foreach (var vdx in context.statement())
             {
-                Log("VisitStatement");
                 this.Visit(vdx);
 
             }
@@ -98,8 +90,6 @@ namespace AntlrCodeGenerator
         //visit assigment
         public override string VisitAssignment(CompileParser.AssignmentContext context)
         {
-            Log("VisitAssignment");
-
             String varName = context.Identifier().GetText();
             _result.AppendCodeLine(EmitLocals(varName));
             if (!variableDefs.IsSymbol(varName))
@@ -176,7 +166,7 @@ namespace AntlrCodeGenerator
         public override string VisitIdentifierFunctionCall(IdentifierFunctionCallContext ctx)
         {
 
-            Log("VisitIdentifierFunctionCall");
+
             if (ctx.exprList() != null)
             {
 
@@ -226,54 +216,60 @@ namespace AntlrCodeGenerator
         public override string VisitAddExpression([NotNull] AddExpressionContext context)
         {
 
-            if (context.op.Text == "+")
+            //switch case on operator
+            switch (context.op.Type)
             {
+                case CompileParser.Add:
+                    _result.AppendCodeLine(this.Visit(context.expression(0)));
+                    _result.AppendCodeLine(this.Visit(context.expression(1)));
+                    _result.AppendCodeLine(OpCodes.Add);
+                    break;
 
-                Log("VisitAddExpression");
-                _result.AppendCodeLine(Visit(context.expression(0)));
+                case CompileParser.Subtract:
+                    _result.AppendCodeLine(this.Visit(context.expression(0)));
+                    _result.AppendCodeLine(this.Visit(context.expression(1)));
+                    _result.AppendCodeLine(OpCodes.Sub);
+                    break;
 
-                _result.AppendCodeLine(Visit(context.expression(1)));
-                _result.AppendCodeLine(OpCodes.Add);
+                default:
 
+                    break;
             }
-            if (context.op.Text == "-")
-            {
-
-                Log("VisitAddExpression");
-                _result.AppendCodeLine(Visit(context.expression(0)));
-                _result.AppendCodeLine(Visit(context.expression(1)));
-                _result.AppendCodeLine(OpCodes.Sub);
-            }
-
             return "";
 
         }
 
         public override string VisitMultExpression([NotNull] MultExpressionContext context)
         {
-            if (context.op.Text == "*")
-            {
 
-                Log("VisitAddExpression");
-                _result.AppendCodeLine(Visit(context.expression(0)));
-                _result.AppendCodeLine(Visit(context.expression(1)));
-                _result.AppendCodeLine(OpCodes.Mul);
-            }
-            if (context.op.Text == "/")
+            //swithc case on op.Text
+            switch (context.op.Text)
             {
-
-                Log("VisitAddExpression");
-                _result.AppendCodeLine(Visit(context.expression(0)));
-                _result.AppendCodeLine(Visit(context.expression(1)));
-                _result.AppendCodeLine(OpCodes.Div);
+                case "*":
+                    _result.AppendCodeLine(Visit(context.expression(0)));
+                    _result.AppendCodeLine(Visit(context.expression(1)));
+                    _result.AppendCodeLine(OpCodes.Mul);
+                    break;
+                case "/":
+                    _result.AppendCodeLine(Visit(context.expression(0)));
+                    _result.AppendCodeLine(Visit(context.expression(1)));
+                    _result.AppendCodeLine(OpCodes.Div);
+                    break;
+                case "%":
+                    _result.AppendCodeLine(Visit(context.expression(0)));
+                    _result.AppendCodeLine(Visit(context.expression(1)));
+                    _result.AppendCodeLine(OpCodes.Rem);
+                    break;
+                default:
+                    break;
             }
+
 
             return "";
 
         }
         public override string VisitExpressionExpression(CompileParser.ExpressionExpressionContext context)
         {
-            Log("VisitExpression");
             _result.AppendCodeLine(Visit(context.expression()));
 
             return "";
@@ -282,7 +278,6 @@ namespace AntlrCodeGenerator
 
         public override string VisitIdentifierExpression(IdentifierExpressionContext ctx)
         {
-            Log("VisitIdentifierExpression");
             if (_localFunctionVariables.Contains(ctx.Identifier().GetText()))
             {
                 //loar arg
@@ -294,7 +289,7 @@ namespace AntlrCodeGenerator
             {
                 //load local
                 _result.AppendCodeLine(OpCodes.LdLoc + ctx.Identifier().GetText());
-                
+
             }
 
             return "";
@@ -303,9 +298,8 @@ namespace AntlrCodeGenerator
 
         public override string VisitNumberExpression(NumberExpressionContext ctx)
         {
-            Log("VisitNumberExpression");
             _result.AppendCodeLine(OpCodes.LdInt4 + ctx.Number().GetText());
-        
+
 
             return "";
 
@@ -321,9 +315,6 @@ namespace AntlrCodeGenerator
         public override string VisitForStatement([NotNull] ForStatementContext context)
         {
 
-            //generate for lopp for (int x = 0; x < 10; i++) {Console.WriteLine(x);}
-
-            Log("VisitForStatement");
             System.Console.WriteLine(context.GetText());
             _result.AppendCodeLine(Visit(context.Identifier()));
 
@@ -369,7 +360,6 @@ namespace AntlrCodeGenerator
 
 
 
-            Log("VisitIfStatement");
             //generate lable for if elseif* else
             string labelTo = MakeLabel(_labelCount);
             _labelCount++;
@@ -394,7 +384,7 @@ namespace AntlrCodeGenerator
                 _result.AppendCodeLine("brfalse " + labelElse);
                 _result.AppendCodeLine(Visit(item.block()));
                 _result.AppendCodeLine("br " + labelEnd);
-                
+
             }
             //emit else
             _result.AppendCodeLine(labelElse + ":");
@@ -406,15 +396,14 @@ namespace AntlrCodeGenerator
             _result.AppendCodeLine(labelEnd + ":");
 
             return "";
-           
+
 
         }
 
-       
+
         public override string VisitCompExpression([NotNull] CompExpressionContext context)
         {
             //switch case
-            Log("VisitCompExpression");
             if (context.op.Text == "==")
             {
                 _result.AppendCodeLine(Visit(context.expression(0)));
@@ -454,7 +443,6 @@ namespace AntlrCodeGenerator
         public override string VisitEqExpression([NotNull] EqExpressionContext context)
         {
 
-            Log("VisitEqExpression");
             if (context.op.Text == "==")
             {
                 _result.AppendCodeLine(Visit(context.expression(0)));
@@ -484,8 +472,6 @@ namespace AntlrCodeGenerator
         }
         private bool IsFunctionContext(ParserRuleContext context)
         {
-            Log("IsFunctionContext");
-
             return context.Parent is FunctionDeclContext;
         }
 

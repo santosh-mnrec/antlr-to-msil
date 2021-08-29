@@ -4,6 +4,7 @@ namespace AntlrCodeGenerator.CodeGenerator
     {
         public static string Add = "add ";
         public static string And = "and ";
+        public static string Rem = "rem";
         public static string Br = "br ";
         public static string Brfalse = "brfalse ";
         public static string Brtrue = "brtrue ";
