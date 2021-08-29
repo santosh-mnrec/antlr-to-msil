@@ -27,7 +27,10 @@ namespace AntlrCodeGenerator.CodeGenerator
         
         public string GetSymbolType(string name)
         {
-            return symbolTable[name];
+            if(symbolTable.ContainsKey(name))
+                        return symbolTable[name];
+            return "";
+            
         }
 
         public bool IsSymbol(string name)
