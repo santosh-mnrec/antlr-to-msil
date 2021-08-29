@@ -16,15 +16,12 @@ namespace AntlrCodeGenerator
 
         //public readonly ILBuilder mainTarget = ILBuilder.Create();
 
-        private ConverterResult _result = new ConverterResult();
-        public static Scope _scope;
-        public HashSet<string> variableDefs = new HashSet<string>();
-        private void AppendCode(string code) => _result.Append(code);
-
-        private void AppendCodeLine() => _result.Append(Environment.NewLine);
+        private CodeBuilder _result = new CodeBuilder();
+     
+        public SymbolTable variableDefs = new SymbolTable();
+       
         //scopelist
         public List<string> _scopeList = new List<string>();
-        private void AppendCodeLine(string code) => _result.Append(code + Environment.NewLine);
         //local function variables
         private List<string> _localFunctionVariables = new List<string>();
         private void AppendLocalFunctionVariable(string variable) => _localFunctionVariables.Add(variable);
@@ -39,11 +36,11 @@ namespace AntlrCodeGenerator
         string header = "";
         public CodeGeneratorVisitor()
         {
-            AppendCodeLine(".assembly extern mscorlib\n{\n}\n");
-            AppendCodeLine(".assembly " + "Program" + "\n{\n}\n\n.module " + "test" + ".exe\n");
-            AppendCodeLine(".class private auto ansi beforefieldinit Program extends [System.Runtime]System.Object {");
-            AppendCodeLine(" .method private hidebysig static void  Main(string[] args) cil managed {");
-            AppendCodeLine(" .entrypoint");
+            _result.AppendCodeLine(".assembly extern mscorlib\n{\n}\n");
+            _result.AppendCodeLine(".assembly " + "Program" + "\n{\n}\n\n.module " + "test" + ".exe\n");
+            _result.AppendCodeLine(".class private auto ansi beforefieldinit Program extends [System.Runtime]System.Object {");
+            _result.AppendCodeLine(" .method private hidebysig static void  Main(string[] args) cil managed {");
+            _result.AppendCodeLine(" .entrypoint");
             header = _result.GetCode();
 
         }
@@ -51,12 +48,12 @@ namespace AntlrCodeGenerator
         {
 
             Log("Entering Parse");
-            AppendCodeLine(Visit(context.block()));
+            _result.AppendCodeLine(Visit(context.block()));
             Log("Ex Parse");
-            AppendCodeLine(main);
-            AppendCodeLine("ret}");
+            _result.AppendCodeLine(main);
+            _result.AppendCodeLine("ret}");
 
-            AppendCodeLine(fn);
+            _result.AppendCodeLine(fn);
 
             var code = header + _result.GetCode() + "\n}";
             File.WriteAllText(@"out\test.il", code);
@@ -66,15 +63,15 @@ namespace AntlrCodeGenerator
         public override string VisitPrintlnFunctionCall([NotNull] PrintlnFunctionCallContext context)
         {
 
-            AppendCodeLine(Visit(context.expression()));
+            _result.AppendCodeLine(Visit(context.expression()));
             //if identifier is a string
             if (context.expression().GetText().Contains("\""))
             {
-                AppendCodeLine("call void [mscorlib]System.Console::WriteLine(string)");
+                _result.AppendCodeLine("call void [mscorlib]System.Console::WriteLine(string)");
             }
             else
             {
-                AppendCodeLine("call void [mscorlib]System.Console::WriteLine(int32)");
+                _result.AppendCodeLine("call void [mscorlib]System.Console::WriteLine(int32)");
             }
 
             return "";
@@ -104,11 +101,11 @@ namespace AntlrCodeGenerator
             Log("VisitAssignment");
 
             String varName = context.Identifier().GetText();
-            AppendCodeLine(EmitLocals(varName));
-            if (!variableDefs.Contains(varName))
-                variableDefs.Add(varName);
-            AppendCodeLine(this.Visit(context.expression()));
-            AppendCodeLine(OpCodes.StLoc + varName);
+            _result.AppendCodeLine(EmitLocals(varName));
+            if (!variableDefs.IsSymbol(varName))
+                variableDefs.AddSymbol(varName);
+            _result.AppendCodeLine(this.Visit(context.expression()));
+            _result.AppendCodeLine(OpCodes.StLoc + varName);
 
             return "";
 
@@ -130,8 +127,8 @@ namespace AntlrCodeGenerator
             }
             s += ") cil managed";
 
-            AppendCodeLine(s + "{");
-            AppendCodeLine(EmitLocals(GetParameters(@params.ToList())));
+            _result.AppendCodeLine(s + "{");
+            _result.AppendCodeLine(EmitLocals(GetParameters(@params.ToList())));
             //emit arg to stack
             for (int i = 0; i < @params.Length; ++i)
             {
@@ -150,8 +147,8 @@ namespace AntlrCodeGenerator
                 }
             }
 
-            AppendCodeLine(Visit(context.block()) + "ret");
-            AppendCodeLine("}");
+            _result.AppendCodeLine(Visit(context.block()) + "ret");
+            _result.AppendCodeLine("}");
 
             fn += _result.GetCode();
 
@@ -187,13 +184,13 @@ namespace AntlrCodeGenerator
                 int count = ctx.exprList().expression().Length;
                 //load args
 
-                AppendCodeLine(Visit(ctx.exprList()));
+                _result.AppendCodeLine(Visit(ctx.exprList()));
 
-                AppendCodeLine($"call  void Program::{ctx.Identifier().GetText()}({GetFunctionArguments(ctx)})");
+                _result.AppendCodeLine($"call  void Program::{ctx.Identifier().GetText()}({GetFunctionArguments(ctx)})");
             }
             else
             {
-                AppendCodeLine($"call  void Program::{ctx.Identifier().GetText()}()");
+                _result.AppendCodeLine($"call  void Program::{ctx.Identifier().GetText()}()");
             }
 
             return "";
@@ -223,7 +220,7 @@ namespace AntlrCodeGenerator
         public override string VisitStringExpression([NotNull] StringExpressionContext context)
         {
             //load string
-            AppendCodeLine("ldstr " + context.GetText());
+            _result.AppendCodeLine("ldstr " + context.GetText());
             return "";
         }
         public override string VisitAddExpression([NotNull] AddExpressionContext context)
@@ -233,19 +230,19 @@ namespace AntlrCodeGenerator
             {
 
                 Log("VisitAddExpression");
-                AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(0)));
 
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Add);
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Add);
 
             }
             if (context.op.Text == "-")
             {
 
                 Log("VisitAddExpression");
-                AppendCodeLine(Visit(context.expression(0)));
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Sub);
+                _result.AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Sub);
             }
 
             return "";
@@ -258,17 +255,17 @@ namespace AntlrCodeGenerator
             {
 
                 Log("VisitAddExpression");
-                AppendCodeLine(Visit(context.expression(0)));
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Mul);
+                _result.AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Mul);
             }
             if (context.op.Text == "/")
             {
 
                 Log("VisitAddExpression");
-                AppendCodeLine(Visit(context.expression(0)));
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Div);
+                _result.AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Div);
             }
 
             return "";
@@ -277,7 +274,7 @@ namespace AntlrCodeGenerator
         public override string VisitExpressionExpression(CompileParser.ExpressionExpressionContext context)
         {
             Log("VisitExpression");
-            AppendCodeLine(Visit(context.expression()));
+            _result.AppendCodeLine(Visit(context.expression()));
 
             return "";
 
@@ -289,14 +286,14 @@ namespace AntlrCodeGenerator
             if (_localFunctionVariables.Contains(ctx.Identifier().GetText()))
             {
                 //loar arg
-                AppendCodeLine(OpCodes.LdArg + ctx.Identifier().GetText());
+                _result.AppendCodeLine(OpCodes.LdArg + ctx.Identifier().GetText());
                 //remove the variable from the local function variables
                 _localFunctionVariables.Remove(ctx.Identifier().GetText());
             }
             else
             {
                 //load local
-                AppendCodeLine(OpCodes.LdLoc + ctx.Identifier().GetText());
+                _result.AppendCodeLine(OpCodes.LdLoc + ctx.Identifier().GetText());
                 
             }
 
@@ -307,7 +304,7 @@ namespace AntlrCodeGenerator
         public override string VisitNumberExpression(NumberExpressionContext ctx)
         {
             Log("VisitNumberExpression");
-            AppendCodeLine(OpCodes.LdInt4 + ctx.Number().GetText());
+            _result.AppendCodeLine(OpCodes.LdInt4 + ctx.Number().GetText());
         
 
             return "";
@@ -328,40 +325,40 @@ namespace AntlrCodeGenerator
 
             Log("VisitForStatement");
             System.Console.WriteLine(context.GetText());
-            AppendCodeLine(Visit(context.Identifier()));
+            _result.AppendCodeLine(Visit(context.Identifier()));
 
             string varName = context.Identifier().GetText();
             string start = context.expression(0).GetText();
 
-            AppendCodeLine(OpCodes.LdInt4 + start);
+            _result.AppendCodeLine(OpCodes.LdInt4 + start);
 
             //emitlocal
-            AppendCodeLine(EmitLocals(context.Identifier().GetText()));
+            _result.AppendCodeLine(EmitLocals(context.Identifier().GetText()));
             _result.InitializeVariable(varName, start);
             //load start value
             labelPrev = MakeLabel(_labelCount);
             _labelCount++;
-            AppendCodeLine(OpCodes.Br + labelPrev);
+            _result.AppendCodeLine(OpCodes.Br + labelPrev);
             string labelTo = MakeLabel(_labelCount);
             _labelCount++;
             _labelCount++;
 
             //labeto
-            AppendCodeLine(labelTo + ":");
-            AppendCodeLine(OpCodes.LdLoc + varName);
-            AppendCodeLine("ldc.i4 1 ");
+            _result.AppendCodeLine(labelTo + ":");
+            _result.AppendCodeLine(OpCodes.LdLoc + varName);
+            _result.AppendCodeLine("ldc.i4 1 ");
 
-            AppendCodeLine(OpCodes.Add);
-            AppendCodeLine("stloc " + varName);
+            _result.AppendCodeLine(OpCodes.Add);
+            _result.AppendCodeLine("stloc " + varName);
             //statemtn
-            AppendCodeLine(Visit(context.block()));
-            AppendCodeLine(labelPrev + ":");
-            AppendCodeLine("ldloc " + varName);
-            AppendCodeLine(Visit(context.expression(1)));
+            _result.AppendCodeLine(Visit(context.block()));
+            _result.AppendCodeLine(labelPrev + ":");
+            _result.AppendCodeLine("ldloc " + varName);
+            _result.AppendCodeLine(Visit(context.expression(1)));
             //compare
-            AppendCodeLine("clt ");
+            _result.AppendCodeLine("clt ");
 
-            AppendCodeLine("brtrue " + labelTo);
+            _result.AppendCodeLine("brtrue " + labelTo);
 
             return "";
 
@@ -384,77 +381,73 @@ namespace AntlrCodeGenerator
             _labelCount++;
 
             //emit if
-            AppendCodeLine(Visit(context.ifStat().expression()));
-            AppendCodeLine("brfalse " + labelElseIf);
-            AppendCodeLine(Visit(context.ifStat().block()));
-            AppendCodeLine("br " + labelEnd);
+            _result.AppendCodeLine(Visit(context.ifStat().expression()));
+            _result.AppendCodeLine("brfalse " + labelElseIf);
+            _result.AppendCodeLine(Visit(context.ifStat().block()));
+            _result.AppendCodeLine("br " + labelEnd);
             //emit all child of elseif
-            AppendCodeLine(labelElseIf + ":");
+            _result.AppendCodeLine(labelElseIf + ":");
             foreach (var item in context.elseIfStat())
             {
                 //check expression
-                AppendCodeLine(Visit(item.expression()));
-                AppendCodeLine("brfalse " + labelElse);
-                AppendCodeLine(Visit(item.block()));
-                AppendCodeLine("br " + labelEnd);
+                _result.AppendCodeLine(Visit(item.expression()));
+                _result.AppendCodeLine("brfalse " + labelElse);
+                _result.AppendCodeLine(Visit(item.block()));
+                _result.AppendCodeLine("br " + labelEnd);
                 
             }
             //emit else
-            AppendCodeLine(labelElse + ":");
+            _result.AppendCodeLine(labelElse + ":");
             if (context.elseStat() != null)
             {
-                AppendCodeLine(Visit(context.elseStat()));
+                _result.AppendCodeLine(Visit(context.elseStat()));
             }
             //emit end
-            AppendCodeLine(labelEnd + ":");
+            _result.AppendCodeLine(labelEnd + ":");
 
             return "";
            
 
         }
 
-        private void AppendCodeLine(object ret)
-        {
-            throw new NotImplementedException();
-        }
-
+       
         public override string VisitCompExpression([NotNull] CompExpressionContext context)
         {
             //switch case
             Log("VisitCompExpression");
             if (context.op.Text == "==")
             {
-                AppendCodeLine(Visit(context.expression(0)));
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Ceq);
+                _result.AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Ceq);
             }
             if (context.op.Text == "!=")
             {
-                AppendCodeLine(Visit(context.expression(0)));
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Ceq);
-                AppendCodeLine(OpCodes.LdInt4 + "0");
-                AppendCodeLine(OpCodes.Ceq);
+                _result.AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Ceq);
+                _result.AppendCodeLine(OpCodes.LdInt4 + "0");
+                _result.AppendCodeLine(OpCodes.Ceq);
             }
             if (context.op.Text == ">")
             {
-                AppendCodeLine(Visit(context.expression(0)));
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Cgt);
+                _result.AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Cgt);
             }
             if (context.op.Text == "<")
             {
-                AppendCodeLine(Visit(context.expression(0)));
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Clt);
+                _result.AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Clt);
             }
             if (context.op.Text == ">=")
             {
-                AppendCodeLine(Visit(context.expression(0)));
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Cgt_Un);
-                AppendCodeLine(OpCodes.LdInt4 + "0");
-                AppendCodeLine(OpCodes.Ceq);
+                _result.AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Cgt_Un);
+                _result.AppendCodeLine(OpCodes.LdInt4 + "0");
+                _result.AppendCodeLine(OpCodes.Ceq);
             }
             return "";
         }
@@ -464,17 +457,17 @@ namespace AntlrCodeGenerator
             Log("VisitEqExpression");
             if (context.op.Text == "==")
             {
-                AppendCodeLine(Visit(context.expression(0)));
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Ceq);
+                _result.AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Ceq);
             }
             if (context.op.Text == "!=")
             {
-                AppendCodeLine(Visit(context.expression(0)));
-                AppendCodeLine(Visit(context.expression(1)));
-                AppendCodeLine(OpCodes.Ceq);
-                AppendCodeLine(OpCodes.LdInt4 + "0");
-                AppendCodeLine(OpCodes.Ceq);
+                _result.AppendCodeLine(Visit(context.expression(0)));
+                _result.AppendCodeLine(Visit(context.expression(1)));
+                _result.AppendCodeLine(OpCodes.Ceq);
+                _result.AppendCodeLine(OpCodes.LdInt4 + "0");
+                _result.AppendCodeLine(OpCodes.Ceq);
             }
             return "";
         }

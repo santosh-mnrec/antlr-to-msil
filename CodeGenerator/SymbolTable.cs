@@ -8,34 +8,39 @@ namespace AntlrCodeGenerator.CodeGenerator
 
         //symbol table
 
-        public static Dictionary<string, string> symbolTable = new Dictionary<string, string>();
+        public Dictionary<string, string> symbolTable = new Dictionary<string, string>();
 
-        public static void addSymbol(string name, string type)
+        public void AddSymbol(string name, string type)
         {
             symbolTable.Add(name, type);
         }
+        public void AddSymbol(string name)
+        {
+            symbolTable.Add(name, "int");
 
-        public static string getSymbolType(string name)
+        }
+
+        public string GetSymbolType(string name)
         {
             return symbolTable[name];
         }
 
-        public static bool isSymbol(string name)
+        public bool IsSymbol(string name)
         {
             return symbolTable.ContainsKey(name);
         }
 
-        public static void removeSymbol(string name)
+        public void RemoveSymbol(string name)
         {
             symbolTable.Remove(name);
         }
 
-        public static void clearSymbolTable()
+        public  void ClearSymbolTable()
         {
             symbolTable.Clear();
         }
 
-        public static void printSymbolTable()
+        public  void PrintSymbolTable()
         {
             foreach (KeyValuePair<string, string> entry in symbolTable)
             {
