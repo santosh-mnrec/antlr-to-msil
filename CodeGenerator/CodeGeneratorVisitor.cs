@@ -30,6 +30,7 @@ namespace AntlrCodeGenerator
         string main = "";
         string fn = "";
         string header = "";
+        private bool isString=false;
         public CodeGeneratorVisitor()
         {
             _result.AppendCodeLine(".assembly extern mscorlib\n{\n}\n");
@@ -241,12 +242,16 @@ namespace AntlrCodeGenerator
                     if (variableDefs.GetSymbolType(context.expression(0).GetText()) == "string"
                     && variableDefs.GetSymbolType(context.expression(1).GetText()) == "string")
                     {
+                        isString=true;
+                        //update identifier type
+                        variableDefs.UpdateSymbolType(context.Parent.GetChild(0).GetText(), "string");
                         //append to string
                         _result.AppendCodeLine("call string string::Concat(string,string)");
                         // _result.AppendCodeLine(OpCodes.Call + " System.String::Concat(System.String,System.String)");
                     }
                     else
                     {
+                        isString=false;
                         _result.AppendCodeLine(OpCodes.Add);
 
                     }
