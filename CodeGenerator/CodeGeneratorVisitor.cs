@@ -30,7 +30,7 @@ namespace AntlrCodeGenerator
         string main = "";
         string fn = "";
         string header = "";
-        private bool isString=false;
+        private bool isString = false;
         public CodeGeneratorVisitor()
         {
             _result.AppendCodeLine(".assembly extern mscorlib\n{\n}\n");
@@ -242,7 +242,7 @@ namespace AntlrCodeGenerator
                     if (variableDefs.GetSymbolType(context.expression(0).GetText()) == "string"
                     && variableDefs.GetSymbolType(context.expression(1).GetText()) == "string")
                     {
-                        isString=true;
+                        isString = true;
                         //update identifier type
                         variableDefs.UpdateSymbolType(context.Parent.GetChild(0).GetText(), "string");
                         //append to string
@@ -251,7 +251,7 @@ namespace AntlrCodeGenerator
                     }
                     else
                     {
-                        isString=false;
+                        isString = false;
                         _result.AppendCodeLine(OpCodes.Add);
 
                     }
@@ -322,8 +322,9 @@ namespace AntlrCodeGenerator
             {
                 //load local
                 _result.AppendCodeLine(OpCodes.LdLoc + ctx.Identifier().GetText());
-
             }
+
+
 
             return "";
 
