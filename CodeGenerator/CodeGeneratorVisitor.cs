@@ -58,15 +58,27 @@ namespace AntlrCodeGenerator
         {
 
             _result.AppendCodeLine(Visit(context.expression()));
-            //if identifier is a string
-            if (context.expression().GetText().Contains("\""))
+
+            //get id of expression
+            var variable = context.expression().GetText();
+
+            //
+            //check variable exists in variableDefs
+
+            if (variableDefs.GetSymbolType(variable) == "int")
             {
-                _result.AppendCodeLine("call void [mscorlib]System.Console::WriteLine(string)");
+
+                _result.AppendCodeLine("call void [mscorlib]System.Console::WriteLine(int32)");
+
+
             }
             else
             {
-                _result.AppendCodeLine("call void [mscorlib]System.Console::WriteLine(int32)");
+
+                _result.AppendCodeLine("call void [mscorlib]System.Console::WriteLine(string)");
             }
+
+
 
             return "";
         }
@@ -226,12 +238,12 @@ namespace AntlrCodeGenerator
                     _result.AppendCodeLine(this.Visit(context.expression(0)));
                     _result.AppendCodeLine(this.Visit(context.expression(1)));
                     //if both are ints
-                    if (variableDefs.GetSymbolType(context.expression(0).GetText()) == "string" 
+                    if (variableDefs.GetSymbolType(context.expression(0).GetText()) == "string"
                     && variableDefs.GetSymbolType(context.expression(1).GetText()) == "string")
                     {
                         //append to string
                         _result.AppendCodeLine("call string string::Concat(string,string)");
-                       // _result.AppendCodeLine(OpCodes.Call + " System.String::Concat(System.String,System.String)");
+                        // _result.AppendCodeLine(OpCodes.Call + " System.String::Concat(System.String,System.String)");
                     }
                     else
                     {
