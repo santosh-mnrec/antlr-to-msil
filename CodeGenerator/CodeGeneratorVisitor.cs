@@ -295,7 +295,9 @@ namespace AntlrCodeGenerator
             }
             else
             {
+                //load local
                 AppendCodeLine(OpCodes.LdLoc + ctx.Identifier().GetText());
+                
             }
 
             return "";
@@ -306,6 +308,7 @@ namespace AntlrCodeGenerator
         {
             Log("VisitNumberExpression");
             AppendCodeLine(OpCodes.LdInt4 + ctx.Number().GetText());
+        
 
             return "";
 
