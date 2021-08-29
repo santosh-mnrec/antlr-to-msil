@@ -210,6 +210,9 @@ namespace AntlrCodeGenerator
         public override string VisitStringExpression([NotNull] StringExpressionContext context)
         {
             //load string
+
+            //update identifier type
+            variableDefs.UpdateSymbolType(context.Parent.GetChild(0).GetText(), "string");
             _result.AppendCodeLine("ldstr " + context.GetText());
             return "";
         }
@@ -222,7 +225,20 @@ namespace AntlrCodeGenerator
                 case CompileParser.Add:
                     _result.AppendCodeLine(this.Visit(context.expression(0)));
                     _result.AppendCodeLine(this.Visit(context.expression(1)));
-                    _result.AppendCodeLine(OpCodes.Add);
+                    //if both are ints
+                    if (variableDefs.GetSymbolType(context.expression(0).GetText()) == "string" 
+                    && variableDefs.GetSymbolType(context.expression(1).GetText()) == "string")
+                    {
+                        //append to string
+                        _result.AppendCodeLine("call string string::Concat(string,string)");
+                       // _result.AppendCodeLine(OpCodes.Call + " System.String::Concat(System.String,System.String)");
+                    }
+                    else
+                    {
+                        _result.AppendCodeLine(OpCodes.Add);
+
+                    }
+
                     break;
 
                 case CompileParser.Subtract:
@@ -298,6 +314,7 @@ namespace AntlrCodeGenerator
 
         public override string VisitNumberExpression(NumberExpressionContext ctx)
         {
+            variableDefs.UpdateSymbolType(ctx.Parent.GetChild(0).GetText(), "int32");
             _result.AppendCodeLine(OpCodes.LdInt4 + ctx.Number().GetText());
 
 

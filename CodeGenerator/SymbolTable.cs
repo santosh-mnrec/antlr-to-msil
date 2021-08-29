@@ -19,7 +19,12 @@ namespace AntlrCodeGenerator.CodeGenerator
             symbolTable.Add(name, "int");
 
         }
-
+        //get value
+        public string GetValue(string name)
+        {
+            return symbolTable[name];
+        }
+        
         public string GetSymbolType(string name)
         {
             return symbolTable[name];
@@ -40,6 +45,12 @@ namespace AntlrCodeGenerator.CodeGenerator
             symbolTable.Clear();
         }
 
+        //update symbol type
+        public void UpdateSymbolType(string name, string type)
+        {
+            symbolTable[name] = type;
+        }
+        
         public  void PrintSymbolTable()
         {
             foreach (KeyValuePair<string, string> entry in symbolTable)
