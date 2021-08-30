@@ -478,40 +478,40 @@ namespace AntlrCodeGenerator
         public override Value VisitCompExpression([NotNull] CompExpressionContext context)
         {
             //switch case
-            //     if (context.op.Text == "==")
-            //     {
-            //         _result.AppendCodeLine(2,Visit(context.expression(0)));
-            //         _result.AppendCodeLine(2,Visit(context.expression(1)));
-            //         _result.AppendCodeLine(2,OpCodes.Ceq);
-            //     }
-            //     if (context.op.Text == "!=")
-            //     {
-            //         _result.AppendCodeLine(2,Visit(context.expression(0)));
-            //         _result.AppendCodeLine(2,Visit(context.expression(1)));
-            //         _result.AppendCodeLine(2,OpCodes.Ceq);
-            //         _result.AppendCodeLine(2,OpCodes.LdInt4 + "0");
-            //         _result.AppendCodeLine(2,OpCodes.Ceq);
-            //     }
-            //     if (context.op.Text == ">")
-            //     {
-            //         _result.AppendCodeLine(2,Visit(context.expression(0)));
-            //         _result.AppendCodeLine(2,Visit(context.expression(1)));
-            //         _result.AppendCodeLine(2,OpCodes.Cgt);
-            //     }
-            //     if (context.op.Text == "<")
-            //     {
-            //         _result.AppendCodeLine(2,Visit(context.expression(0)));
-            //         _result.AppendCodeLine(2,Visit(context.expression(1)));
-            //         _result.AppendCodeLine(2,OpCodes.Clt);
-            //     }
-            //     if (context.op.Text == ">=")
-            //     {
-            //         _result.AppendCodeLine(2,Visit(context.expression(0)));
-            //         _result.AppendCodeLine(2,Visit(context.expression(1)));
-            //         _result.AppendCodeLine(2,OpCodes.Cgt_Un);
-            //         _result.AppendCodeLine(2,OpCodes.LdInt4 + "0");
-            //         _result.AppendCodeLine(2,OpCodes.Ceq);
-            //     }
+            if (context.op.Text == "==")
+            {
+                Visit(context.expression(0));
+                Visit(context.expression(1));
+                _result.AppendCodeLine(2, OpCodes.Ceq);
+            }
+            if (context.op.Text == "!=")
+            {
+                Visit(context.expression(0));
+                Visit(context.expression(1));
+                _result.AppendCodeLine(2, OpCodes.Ceq);
+                _result.AppendCodeLine(2, OpCodes.LdInt4 + "0");
+                _result.AppendCodeLine(2, OpCodes.Ceq);
+            }
+            if (context.op.Text == ">")
+            {
+                Visit(context.expression(0));
+                Visit(context.expression(1));
+                _result.AppendCodeLine(2, OpCodes.Cgt);
+            }
+            if (context.op.Text == "<")
+            {
+                Visit(context.expression(0));
+                Visit(context.expression(1));
+                _result.AppendCodeLine(2, OpCodes.Clt);
+            }
+            if (context.op.Text == ">=")
+            {
+                Visit(context.expression(0));
+                Visit(context.expression(1));
+                _result.AppendCodeLine(2, OpCodes.Cgt_Un);
+                _result.AppendCodeLine(2, OpCodes.LdInt4 + "0");
+                _result.AppendCodeLine(2, OpCodes.Ceq);
+            }
             return Value.VOID;
 
         }
