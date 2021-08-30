@@ -57,38 +57,25 @@ namespace AntlrCodeGenerator
         public override Value VisitPrintlnFunctionCall([NotNull] PrintlnFunctionCallContext context)
         {
 
-            var result = Visit(context.expression());
+            Visit(context.expression());
 
-            if (printOrder.Count() > 0)
+            if (context.GetChild(2).GetText().Contains("%d"))
             {
-                var order = printOrder.Pop();
-                if (order == "int")
-                {
-
-                    _result.EmitInBuiltFunctionCall("int32");
-
-
-                }
-                else
-                {
-
-                    _result.EmitInBuiltFunctionCall("string");
-                }
-            }
-            else if (result.IsNumber())
-            {
-
                 _result.EmitInBuiltFunctionCall("int32");
+
             }
-            else if (result.isString())
+            else if (context.GetChild(2).GetText().Contains("%s"))
             {
 
                 _result.EmitInBuiltFunctionCall("string");
+
             }
-            else
-            {
-                _result.EmitInBuiltFunctionCall("object");
-            }
+
+
+
+
+
+
 
 
             return Value.VOID;
@@ -291,7 +278,7 @@ namespace AntlrCodeGenerator
                     {
 
                         _result.AppendCodeLine(2, OpCodes.Add);
-                       
+
                         return Value.VOID;
 
                     }
@@ -300,7 +287,7 @@ namespace AntlrCodeGenerator
 
                         //append to string
                         _result.AppendCodeLine(2, "call string string::Concat(string,string)");
-                       
+
                         return Value.VOID;
 
                     }
@@ -362,7 +349,7 @@ namespace AntlrCodeGenerator
         {
             Visit(context.expression());
 
-            currentScope.Assign(context.expression().GetText(), Value.VOID);
+            currentScope.Assign(context.expression().GetChild(0).GetText(), new Value(context.expression().GetChild(2).GetText()));
 
 
             return Value.VOID;

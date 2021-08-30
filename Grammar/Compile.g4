@@ -19,8 +19,10 @@ statement: assignment ';' | functionCall ';' | forStatement | ifStatement;
 assignment: Identifier indexes? '=' expression;
 
 functionCall:
-	Identifier '(' exprList? ')'	# identifierFunctionCall
-	| Println '(' expression? ')'	# printlnFunctionCall;
+	Identifier '(' exprList? ')' 	# identifierFunctionCall
+	| Println '(' typespecifier ',' expression? ')'	# printlnFunctionCall;
+
+typespecifier:'%d' |'%s';
 
 functionDecl: 'func' Identifier '(' idList? ')' '{' block '}';
 
