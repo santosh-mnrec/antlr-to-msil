@@ -20,13 +20,7 @@ namespace AntlrCodeGenerator
         private CodeBuilder _result = new CodeBuilder();
 
         public SymbolTable variableDefs = new SymbolTable();
-
-        private Function func = new Function();
-
-
-
-
-
+       
         string main = "";
         string fn = "";
         string header = "";
@@ -166,8 +160,6 @@ namespace AntlrCodeGenerator
 
             var functionScope = new Scope(currentScope, true);
             currentScope = functionScope;
-            func.Name = context.Identifier().GetText();
-
 
             var @params = context.idList() != null ? context.idList().Identifier() : new List<ITerminalNode>().ToArray();
             string s = "";
@@ -196,8 +188,6 @@ namespace AntlrCodeGenerator
             Visit(context.block());
             _result.AppendCodeLine(2, "ret");
             _result.AppendCodeLine(2, "}");
-            func.Parameters = currentScope.Variables;
-
             fn += _result.GetCode();
 
             currentScope = functionScope.Parent;
