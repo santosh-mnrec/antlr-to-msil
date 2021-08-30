@@ -7,7 +7,7 @@ namespace AntlrCodeGenerator
 
         private Scope _parent;
         public Dictionary<string, Value> Variables { get; set; }
-   
+
         private bool _isFunction;
         public bool IsFunction
         {
@@ -19,17 +19,15 @@ namespace AntlrCodeGenerator
 
         public Scope() : this(null, false) { }
 
-
+        public void assignParam(string var, Value value)
+        {
+            Variables.TryAdd(var, value);
+        }
         public Scope(Scope p, bool function)
         {
             _parent = p;
             Variables = new Dictionary<string, Value>();
             _isFunction = function;
-        }
-
-        public void AssignParameter(string var, Value value)
-        {
-            Variables.Add(var, value);
         }
 
         public void Assign(string var, Value @value)
@@ -42,7 +40,7 @@ namespace AntlrCodeGenerator
             else
             {
                 // A newly declared variable
-                Variables.Add(var, value);
+                Variables.TryAdd(var, value);
             }
         }
 

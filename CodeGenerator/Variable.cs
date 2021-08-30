@@ -27,7 +27,7 @@ namespace AntlrCodeGenerator
             }
             value = input;
             // only accept bool, list, number or string types
-            if (!(Isbool()  || IsNumber() || isString()))
+            if (!(Isbool()  || IsNumber() || isString() || isNull()))
             {
                 throw new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
             }
