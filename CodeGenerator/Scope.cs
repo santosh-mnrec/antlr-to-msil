@@ -6,33 +6,32 @@ namespace AntlrCodeGenerator
     {
 
         private Scope _parent;
-        public Dictionary<string, Value> Variables { get; set; }
+        public Dictionary<string, Value> _variables { get; set; }
+        public string ScopeName { get; set; }
 
-        private bool _isFunction;
-        public bool IsFunction
+        public bool IsScope(string name)
         {
-            get
-            {
-                return _isFunction;
-            }
+            return name.Equals(ScopeName);
         }
 
-        public Scope() : this(null, false) { }
+
+        public Scope() : this(null, "global") { }
 
         public void assignParam(string var, Value value)
         {
-            Variables.TryAdd(var, value);
+            _variables.TryAdd(var, value);
         }
-        public Scope(Scope p, bool function)
+        public Scope(Scope p, string scopeName)
         {
             _parent = p;
-            Variables = new Dictionary<string, Value>();
-            _isFunction = function;
+            _variables = new Dictionary<string, Value>();
+            ScopeName = scopeName;
+
         }
 
         public void Assign(string var, Value @value)
         {
-            if (Resolve(@var, !_isFunction) != null)
+            if (Resolve(@var, !IsScope(ScopeName)) != null)
             {
                 // There is already such a variable, re-assign it
                 this.ReAssign(@var, @value);
@@ -40,7 +39,7 @@ namespace AntlrCodeGenerator
             else
             {
                 // A newly declared variable
-                Variables.TryAdd(var, value);
+                _variables.TryAdd(var, value);
             }
         }
 
@@ -59,10 +58,10 @@ namespace AntlrCodeGenerator
 
         private void ReAssign(string identifier, Value value)
         {
-            if (Variables.ContainsKey(identifier))
+            if (_variables.ContainsKey(identifier))
             {
                 // The variable is declared in this scope
-                Variables.TryAdd(identifier, value);
+                _variables.TryAdd(identifier, value);
             }
             else if (_parent != null)
             {
@@ -79,7 +78,7 @@ namespace AntlrCodeGenerator
 
         private Value Resolve(string var, bool checkParent)
         {
-            Variables.TryGetValue(@var, out var value);
+            _variables.TryGetValue(@var, out var value);
 
             if (value != null)
             {
@@ -89,7 +88,7 @@ namespace AntlrCodeGenerator
             else if (checkParent && !IsGlobalScope())
             {
                 // Let the parent scope look for the variable
-                return _parent.Resolve(var, !_parent._isFunction);
+                return _parent.Resolve(var, !_parent.IsScope(ScopeName));
             }
             else
             {

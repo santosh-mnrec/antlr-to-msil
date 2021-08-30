@@ -20,7 +20,7 @@ namespace AntlrCodeGenerator
         private CodeBuilder _result = new CodeBuilder();
 
         public SymbolTable variableDefs = new SymbolTable();
-       
+
         string main = "";
         string fn = "";
         string header = "";
@@ -138,7 +138,7 @@ namespace AntlrCodeGenerator
             var variable = currentScope.Resolve(identifier);
 
 
-            if (currentScope.IsFunction && variable.ToString() != "NULL")
+            if (currentScope.IsScope("function") && variable.ToString() != "NULL")
             {
                 _result.AppendCodeLine(2, OpCodes.LdArg + ctx.Identifier().GetText());
             }
@@ -147,7 +147,7 @@ namespace AntlrCodeGenerator
                 _result.AppendCodeLine(2, OpCodes.LdLoc + ctx.Identifier().GetText());
             }
 
-            return variable.ToString() == "NULL" ? Value.VOID : new Value(variable);
+            return (variable == null || variable?.ToString() == "NULL") ? Value.VOID : new Value(variable);
 
 
         }
@@ -158,7 +158,7 @@ namespace AntlrCodeGenerator
         {
             main += _result.GetCode();
 
-            var functionScope = new Scope(currentScope, true);
+            var functionScope = new Scope(currentScope, "function");
             currentScope = functionScope;
 
             var @params = context.idList() != null ? context.idList().Identifier() : new List<ITerminalNode>().ToArray();
@@ -379,11 +379,13 @@ namespace AntlrCodeGenerator
         public override Value VisitForStatement([NotNull] ForStatementContext context)
         {
 
-            System.Console.WriteLine(context.GetText());
+            var forScope = new Scope(currentScope, "for");
+            currentScope = forScope;
             Visit(context.Identifier());
 
             string varName = context.Identifier().GetText();
             string start = context.expression(0).GetText();
+            currentScope.Assign(varName, new Value(start));
 
             _result.AppendCodeLine(2, OpCodes.LdInt4 + start);
 
@@ -415,7 +417,8 @@ namespace AntlrCodeGenerator
 
             _result.AppendCodeLine(0, "brtrue " + labelTo);
 
-            return Value.VOID;
+
+            return new Value("int");
 
         }
 
