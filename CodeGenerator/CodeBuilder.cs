@@ -30,7 +30,7 @@ namespace AntlrCodeGenerator
         }
         public void EmitInBuiltFunctionCall(string type)
         {
-            AppendCodeLine(2, $"call void [mscorlib]System.Console::WriteLine(${type})");
+            AppendCodeLine(2, $"call void [mscorlib]System.Console::WriteLine({type})");
         }
         public string GetCode()
         {
