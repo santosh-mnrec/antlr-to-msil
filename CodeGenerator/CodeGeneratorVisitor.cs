@@ -140,7 +140,14 @@ namespace AntlrCodeGenerator
 
             if (currentScope.IsScope("function") && variable.ToString() != "NULL")
             {
-                _result.AppendCodeLine(2, OpCodes.LdArg + ctx.Identifier().GetText());
+                if (!currentScope._variables.ContainsKey(identifier))
+                {
+                    _result.AppendCodeLine(2, OpCodes.LdInt4 + variable.ToString());
+                }
+                else
+                {
+                    _result.AppendCodeLine(2, OpCodes.LdArg + ctx.Identifier().GetText());
+                }
             }
             else
             {
@@ -183,6 +190,7 @@ namespace AntlrCodeGenerator
                 functionScope.assignParam(@params[i].GetText(), new Value(functionArguments[i]));
 
             }
+            functionScope.ArgCount = @params.Count();
 
 
             Visit(context.block());

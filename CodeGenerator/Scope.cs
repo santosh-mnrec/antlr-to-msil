@@ -7,6 +7,7 @@ namespace AntlrCodeGenerator
 
         private Scope _parent;
         public Dictionary<string, Value> _variables { get; set; }
+        public int ArgCount { get; set; }
         public string ScopeName { get; set; }
 
         public bool IsScope(string name)
