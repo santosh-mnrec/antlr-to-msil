@@ -11,7 +11,14 @@ namespace AntlrCodeGenerator
         public void Append(string code) => _result.Append(code);
         private void AppendCode(string code) => _result.Append(code);
 
-        public void AppendCodeLine(string code) => _result.Append(code+Environment.NewLine);
+        public void AppendCodeLine(int pos,string code) {
+
+            for (int i = 0; i < pos; i++)
+            {
+                _result.Append(" ");
+            }
+            _result.AppendLine(code);
+        }
         public void InitializeVariable(string variableName, string value)
         {
             Append("stloc " + variableName + "\n");
