@@ -11,7 +11,8 @@ namespace AntlrCodeGenerator
         public void Append(string code) => _result.Append(code);
         private void AppendCode(string code) => _result.Append(code);
 
-        public void AppendCodeLine(int pos,string code) {
+        public void AppendCodeLine(int pos, string code)
+        {
 
             for (int i = 0; i < pos; i++)
             {
@@ -26,6 +27,10 @@ namespace AntlrCodeGenerator
             Append("stloc " + variableName + "\n");
 
 
+        }
+        public void EmitInBuiltFunctionCall(string type)
+        {
+            AppendCodeLine(2, $"call void [mscorlib]System.Console::WriteLine(${type})");
         }
         public string GetCode()
         {
