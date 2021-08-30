@@ -157,7 +157,7 @@ namespace AntlrCodeGenerator
 
         public bool isString()
         {
-            return value is string;
+            return value.ToString() is string;
         }
 
 

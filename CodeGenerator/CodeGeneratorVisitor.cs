@@ -295,7 +295,16 @@ namespace AntlrCodeGenerator
                         printOrder.Push("int");
 
                     }
-                    else
+                    if (left.isString() && right.isString())
+                    {
+
+                        //append to string
+                        _result.AppendCodeLine("call string string::Concat(string,string)");
+                        // _result.AppendCodeLine(OpCodes.LdLoc + context.Parent.GetChild(0).GetText());
+                        printOrder.Push("string");
+
+                    }
+                    if ((left.isString() || right.isString()) || (right.IsNumber() || left.IsNumber()))
                     {
 
                         //append to string
@@ -463,27 +472,27 @@ namespace AntlrCodeGenerator
             _labelCount++;
 
             //emit if
-            // _result.AppendCodeLine(Visit(context.ifStat().expression()));
-            // _result.AppendCodeLine("brfalse " + labelElseIf);
-            // _result.AppendCodeLine(Visit(context.ifStat().block()));
-            // _result.AppendCodeLine("br " + labelEnd);
-            // //emit all child of elseif
-            // _result.AppendCodeLine(labelElseIf + ":");
-            // foreach (var item in context.elseIfStat())
-            // {
-            //     //check expression
-            //     _result.AppendCodeLine(Visit(item.expression()));
-            //     _result.AppendCodeLine("brfalse " + labelElse);
-            //     _result.AppendCodeLine(Visit(item.block()));
-            //     _result.AppendCodeLine("br " + labelEnd);
+            Visit(context.ifStat().expression());
+            _result.AppendCodeLine("brfalse " + labelElseIf);
+            Visit(context.ifStat().block());
+            _result.AppendCodeLine("br " + labelEnd);
+            //emit all child of elseif
+            _result.AppendCodeLine(labelElseIf + ":");
+            foreach (var item in context.elseIfStat())
+            {
+                //check expression
+                Visit(item.expression());
+                _result.AppendCodeLine("brfalse " + labelElse);
+                Visit(item.block());
+                _result.AppendCodeLine("br " + labelEnd);
 
-            // }
-            // //emit else
-            // _result.AppendCodeLine(labelElse + ":");
-            // if (context.elseStat() != null)
-            // {
-            //     _result.AppendCodeLine(Visit(context.elseStat()));
-            // }
+            }
+            //emit else
+            _result.AppendCodeLine(labelElse + ":");
+            if (context.elseStat() != null)
+            {
+                Visit(context.elseStat());
+            }
             // //emit end
             _result.AppendCodeLine(labelEnd + ":");
 
@@ -530,25 +539,26 @@ namespace AntlrCodeGenerator
             //         _result.AppendCodeLine(OpCodes.LdInt4 + "0");
             //         _result.AppendCodeLine(OpCodes.Ceq);
             //     }
-            //     return Value.VOID;
-            // }
-            // public override Value VisitEqExpression([NotNull] EqExpressionContext context)
-            // {
+            return Value.VOID;
 
-            //     if (context.op.Text == "==")
-            //     {
-            //         _result.AppendCodeLine(Visit(context.expression(0)));
-            //         _result.AppendCodeLine(Visit(context.expression(1)));
-            //         _result.AppendCodeLine(OpCodes.Ceq);
-            //     }
-            //     if (context.op.Text == "!=")
-            //     {
-            //         _result.AppendCodeLine(Visit(context.expression(0)));
-            //         _result.AppendCodeLine(Visit(context.expression(1)));
-            //         _result.AppendCodeLine(OpCodes.Ceq);
-            //         _result.AppendCodeLine(OpCodes.LdInt4 + "0");
-            //         _result.AppendCodeLine(OpCodes.Ceq);
-            //     }
+        }
+        public override Value VisitEqExpression([NotNull] EqExpressionContext context)
+        {
+
+            if (context.op.Text == "==")
+            {
+                Visit(context.expression(0));
+                Visit(context.expression(1));
+                _result.AppendCodeLine(OpCodes.Ceq);
+            }
+            if (context.op.Text == "!=")
+            {
+                Visit(context.expression(0));
+                Visit(context.expression(1));
+                _result.AppendCodeLine(OpCodes.Ceq);
+                _result.AppendCodeLine(OpCodes.LdInt4 + "0");
+                _result.AppendCodeLine(OpCodes.Ceq);
+            }
             return Value.VOID;
         }
         #region Helper
