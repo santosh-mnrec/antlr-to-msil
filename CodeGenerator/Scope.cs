@@ -7,7 +7,7 @@ namespace AntlrCodeGenerator
 
         private Scope _parent;
         public Dictionary<string, Value> Variables { get; set; }
-        public bool IsFunctionDeclration { get; set; }
+   
         private bool _isFunction;
         public bool IsFunction
         {
@@ -64,7 +64,7 @@ namespace AntlrCodeGenerator
             if (Variables.ContainsKey(identifier))
             {
                 // The variable is declared in this scope
-                Variables.Add(identifier, value);
+                Variables.TryAdd(identifier, value);
             }
             else if (_parent != null)
             {

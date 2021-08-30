@@ -7,18 +7,15 @@ namespace AntlrCodeGenerator
     public class Value : IComparable<Value>
 
     {
-        public static readonly Value NULL = new Value();
+       
         public static readonly Value VOID = new Value();
-        // return code as string
-        public string Code { get; set; }    
-        // return code as string
-        
+       
 
         private readonly object value;
 
         public Value()
         {
-            // private constructor: only used for NULL and VOID
+           
             value = new object();
         }
 
@@ -30,7 +27,7 @@ namespace AntlrCodeGenerator
             }
             value = input;
             // only accept bool, list, number or string types
-            if (!(Isbool() || isList() || IsNumber() || isString()))
+            if (!(Isbool()  || IsNumber() || isString()))
             {
                 throw new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
             }
@@ -62,11 +59,6 @@ namespace AntlrCodeGenerator
         }
 
 
-
-        public List<Value> AsList()
-        {
-            return (List<Value>)value;
-        }
 
         public string AsString()
         {
@@ -140,26 +132,22 @@ namespace AntlrCodeGenerator
 
         public bool Isbool()
         {
-            return value is bool;
+            return bool.TryParse(value.ToString(), out bool result);
         }
 
         public bool IsNumber()
         {
-            return value is int;
+           //can convert to int32
+          return int.TryParse(value.ToString(), out int result);
+         
 
         }
 
-        public bool isList()
-        {
-            if (value == null) return false;
-            return value is IList &&
-                   value.GetType().IsGenericType &&
-                   value.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(List<>));
-        }
+      
 
         public bool isNull()
         {
-            return this == NULL;
+            return this == VOID;
         }
 
         public bool isVoid()

@@ -16,21 +16,41 @@ namespace AntlrCodeGenerator.CodeGenerator
         }
         public void AddSymbol(string name)
         {
-            symbolTable.Add(name, "int");
+            //update if exits   
+            if (symbolTable.ContainsKey(name))
+            {
+                symbolTable[name] = "int";
+            }
+            else
+            {
+                symbolTable.Add(name, "int");
+            }
+
+
 
         }
         //get value
         public string GetValue(string name)
         {
-            return symbolTable[name];
+
+            //if exits
+            if (symbolTable.ContainsKey(name))
+            {
+                return symbolTable[name];
+
+            }
+            else
+            {
+                return "";
+            }
         }
-        
+
         public string GetSymbolType(string name)
         {
-            if(symbolTable.ContainsKey(name))
-                        return symbolTable[name];
+            if (symbolTable.ContainsKey(name))
+                return symbolTable[name];
             return "";
-            
+
         }
 
         public bool IsSymbol(string name)
@@ -43,7 +63,7 @@ namespace AntlrCodeGenerator.CodeGenerator
             symbolTable.Remove(name);
         }
 
-        public  void ClearSymbolTable()
+        public void ClearSymbolTable()
         {
             symbolTable.Clear();
         }
@@ -53,8 +73,8 @@ namespace AntlrCodeGenerator.CodeGenerator
         {
             symbolTable[name] = type;
         }
-        
-        public  void PrintSymbolTable()
+
+        public void PrintSymbolTable()
         {
             foreach (KeyValuePair<string, string> entry in symbolTable)
             {
