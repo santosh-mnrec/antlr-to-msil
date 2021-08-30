@@ -79,17 +79,20 @@ namespace AntlrCodeGenerator
                     _result.AppendCodeLine("call void [mscorlib]System.Console::WriteLine(string)");
                 }
             }
-           else if(result.IsNumber()){
+            else if (result.IsNumber())
+            {
 
                 _result.AppendCodeLine("call void [mscorlib]System.Console::WriteLine(int32)");
-           }
-           else if(result.isString()){
+            }
+            else if (result.isString())
+            {
 
                 _result.AppendCodeLine("call void [mscorlib]System.Console::WriteLine(string)");
-           }
-           else{
+            }
+            else
+            {
                 _result.AppendCodeLine("call void [mscorlib]System.Console::WriteLine(object)");
-           }
+            }
 
 
             return Value.VOID;
@@ -133,19 +136,6 @@ namespace AntlrCodeGenerator
         }
         public override Value VisitIdentifierExpression(IdentifierExpressionContext ctx)
         {
-            // if (_localFunctionVariables.Contains(ctx.Identifier().GetText()))
-            // {
-            //     //loar arg
-            //     _result.AppendCodeLine(OpCodes.LdArg + ctx.Identifier().GetText());
-            //     //remove the variable from the local function variables
-            //     _localFunctionVariables.Remove(ctx.Identifier().GetText());
-            // }
-            // else
-            // {
-            //     //load local
-            //     _result.AppendCodeLine(OpCodes.LdLoc + ctx.Identifier().GetText());
-            // }
-            //currentscope
 
 
             var identifier = ctx.Identifier().GetText();
@@ -417,41 +407,41 @@ namespace AntlrCodeGenerator
         public override Value VisitForStatement([NotNull] ForStatementContext context)
         {
 
-            // System.Console.WriteLine(context.GetText());
-            // Visit(context.Identifier());
+            System.Console.WriteLine(context.GetText());
+            Visit(context.Identifier());
 
-            // string varName = context.Identifier().GetText();
-            // string start = context.expression(0).GetText();
+            string varName = context.Identifier().GetText();
+            string start = context.expression(0).GetText();
 
-            // _result.AppendCodeLine(OpCodes.LdInt4 + start);
+            _result.AppendCodeLine(OpCodes.LdInt4 + start);
 
-            // //emitlocal
-            // _result.AppendCodeLine(EmitLocals(context.Identifier().GetText()));
-            // _result.InitializeVariable(varName, start);
-            // //load start value
-            // labelPrev = MakeLabel(_labelCount);
-            // _labelCount++;
-            // _result.AppendCodeLine(OpCodes.Br + labelPrev);
-            // string labelTo = MakeLabel(_labelCount);
-            // _labelCount++;
-            // _labelCount++;
+            //emitlocal
+            _result.AppendCodeLine(EmitLocals(context.Identifier().GetText()));
+            _result.InitializeVariable(varName, start);
+            //load start value
+            labelPrev = MakeLabel(_labelCount);
+            _labelCount++;
+            _result.AppendCodeLine(OpCodes.Br + labelPrev);
+            string labelTo = MakeLabel(_labelCount);
+            _labelCount++;
+            _labelCount++;
 
-            // //labeto
-            // _result.AppendCodeLine(labelTo + ":");
-            // _result.AppendCodeLine(OpCodes.LdLoc + varName);
-            // _result.AppendCodeLine("ldc.i4 1 ");
+            //labeto
+            _result.AppendCodeLine(labelTo + ":");
+            _result.AppendCodeLine(OpCodes.LdLoc + varName);
+            _result.AppendCodeLine("ldc.i4 1 ");
 
-            // _result.AppendCodeLine(OpCodes.Add);
-            // _result.AppendCodeLine("stloc " + varName);
-            // //statemtn
-            // _result.AppendCodeLine(Visit(context.block()));
-            // _result.AppendCodeLine(labelPrev + ":");
-            // _result.AppendCodeLine("ldloc " + varName);
-            // _result.AppendCodeLine(Visit(context.expression(1)));
-            // //compare
-            // _result.AppendCodeLine("clt ");
+            _result.AppendCodeLine(OpCodes.Add);
+            _result.AppendCodeLine("stloc " + varName);
+            //statemtn
+            Visit(context.block());
+            _result.AppendCodeLine(labelPrev + ":");
+            _result.AppendCodeLine("ldloc " + varName);
+            Visit(context.expression(1));
+            //compare
+            _result.AppendCodeLine("clt ");
 
-            // _result.AppendCodeLine("brtrue " + labelTo);
+            _result.AppendCodeLine("brtrue " + labelTo);
 
             return Value.VOID;
 
