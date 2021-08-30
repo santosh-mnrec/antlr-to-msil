@@ -284,6 +284,7 @@ namespace AntlrCodeGenerator
 
                         _result.AppendCodeLine(2, OpCodes.Add);
                         printOrder.Push("int");
+                        return Value.VOID;
 
                     }
                     if (left.isString() && right.isString())
@@ -292,6 +293,7 @@ namespace AntlrCodeGenerator
                         //append to string
                         _result.AppendCodeLine(2, "call string string::Concat(string,string)");
                         printOrder.Push("string");
+                        return Value.VOID;
 
                     }
                     if ((left.isString() || right.isString()) || (right.IsNumber() || left.IsNumber()))
