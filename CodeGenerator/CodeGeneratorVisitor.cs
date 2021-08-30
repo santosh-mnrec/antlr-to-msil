@@ -142,7 +142,7 @@ namespace AntlrCodeGenerator
             {
                 if (!currentScope._variables.ContainsKey(identifier))
                 {
-                    _result.AppendCodeLine(2, OpCodes.LdInt4 + variable.ToString());
+                    _result.AppendCodeLine(2, OpCodes.LdInt4 + variable);
                 }
                 else
                 {
@@ -291,7 +291,7 @@ namespace AntlrCodeGenerator
                     {
 
                         _result.AppendCodeLine(2, OpCodes.Add);
-                        printOrder.Push("int");
+                       
                         return Value.VOID;
 
                     }
@@ -300,7 +300,7 @@ namespace AntlrCodeGenerator
 
                         //append to string
                         _result.AppendCodeLine(2, "call string string::Concat(string,string)");
-                        printOrder.Push("string");
+                       
                         return Value.VOID;
 
                     }
