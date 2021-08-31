@@ -44,7 +44,7 @@ namespace AntlrCodeGenerator
             }
         }
 
-        private bool IsGlobalScope()
+        public bool IsGlobalScope()
         {
             return _parent == null;
         }
