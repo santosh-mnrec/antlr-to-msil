@@ -39,18 +39,5 @@ namespace AntlrCodeGenerator
             _result.Clear();
             return r;
         }
-        public void LoadIntegerToStack(string name, Value value)
-        {
-            AppendCodeLine(2, "ldc.i4 " + value);
-            AppendCodeLine(2, "stloc " + name);
-
-        }
-        public void LoadToLocal(string value)
-        {
-            AppendCodeLine(2, "stloc " + value);
-            AppendCodeLine(2, "ldloc " + value);
-
-
-        }
     }
 }
