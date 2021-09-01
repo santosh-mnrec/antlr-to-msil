@@ -19,7 +19,7 @@ namespace AntlrCodeGenerator
 
         private CodeBuilder _result = new CodeBuilder();
 
-        public SymbolTable variableDefs = new SymbolTable();
+      
 
         string main = "";
         string fn = "";
@@ -127,7 +127,7 @@ namespace AntlrCodeGenerator
 
             if (currentScope.IsScope("function") && variable.ToString() != "NULL")
             {
-                if (!currentScope._variables.ContainsKey(identifier))
+                if (!currentScope.Variables.ContainsKey(identifier))
                 {
                     _result.AppendCodeLine(2, OpCodes.LdInt4 + variable);
                 }
