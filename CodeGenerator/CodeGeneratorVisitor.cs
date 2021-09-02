@@ -201,17 +201,21 @@ namespace AntlrCodeGenerator
             var function = new Function();
             function.FnName = ctx.Identifier().GetText();
 
-            //fill the function call
-            foreach (var vdx in ctx.exprList().expression())
+            if (ctx.exprList() != null)
             {
-                var symbol = new Symbol();
-                var functionParameter = vdx.GetText();
-                symbol.Type = new Value(functionParameter).IsNumber() ? "int32" : "string";
-                symbol.Value = functionParameter;
-                function.Arguments.Add(symbol);
+                //fill the function call
+                foreach (var vdx in ctx?.exprList()?.expression())
+                {
+                    var symbol = new Symbol();
+                    var functionParameter = vdx.GetText();
+                    symbol.Type = new Value(functionParameter).IsNumber() ? "int32" : "string";
+                    symbol.Value = functionParameter;
+                    function.Arguments.Add(symbol);
 
+                }
+               
             }
-            var parameterList = string.Join(",", function.Arguments.Select(x => x.Type).ToArray());
+             var parameterList = string.Join(",", function?.Arguments.Select(x => x.Type).ToArray());
 
             if (ctx.exprList() != null)
             {
