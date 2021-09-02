@@ -55,7 +55,7 @@ namespace AntlrCodeGenerator
 
         public int AsInt()
         {
-            return (int)value;
+            return int.Parse(value.ToString());
         }
 
 

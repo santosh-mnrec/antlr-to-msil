@@ -120,7 +120,7 @@ namespace AntlrCodeGenerator
         {
 
 
-            m
+            var identifier = ctx.Identifier().GetText();
             var variable = currentScope.Resolve(identifier);
 
 
@@ -276,9 +276,9 @@ namespace AntlrCodeGenerator
                     {
 
                         _result.AppendCodeLine(2, OpCodes.Add);
-                       
 
-                        return new Value(left.AsInt()+right.AsInt());
+
+                        return new Value(left.AsInt() + right.AsInt());
 
                     }
                     if (left.isString() && right.isString())
