@@ -42,14 +42,15 @@ namespace AntlrCodeGenerator
             return r;
         }
 
-        public void BuildMethod(ITerminalNode[] @params, string methodName)
+      
+        public void BuildMethod(string[] types, string[] parameters, string methodName)
         {
             var s = string.Empty;
             s += ".method private hidebysig static void " + methodName + "(";
-            for (int i = 0; i < @params.Length; ++i)
+            for (int i = 0; i < types.Length; ++i)
             {
-                s += "int32 " + @params[i];
-                if (i < @params.Length - 1)
+                s += types[i] + " " + parameters[i];
+                if (i <parameters.Length - 1)
 
                     s += ",";
             }
@@ -58,13 +59,15 @@ namespace AntlrCodeGenerator
             AppendCodeLine(2, s + "{");
         }
 
-        public string EmitLocals(params string[] parameters)
+        public string EmitLocals(string[] types,params string[] parameters)
         {
+            
             string s = ".locals init ( ";
             for (int i = 0; i < parameters.Length; i++)
             {
 
-                s += "int32 " + parameters[i];
+                var type= types[i];
+                s += type + " " +parameters[i];
 
                 if (i < parameters.Length - 1)
                     s += ",";
@@ -72,6 +75,7 @@ namespace AntlrCodeGenerator
 
             return s + ")";
         }
+        
 
 
     }

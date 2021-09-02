@@ -156,26 +156,17 @@ namespace AntlrCodeGenerator
 
             var x = fns.FirstOrDefault(fn => fn.FnName == context.Identifier().GetText());
             var @params = context.idList() != null ? context.idList().Identifier() : new List<ITerminalNode>().ToArray();
-            string s = "";
-            s += ".method private hidebysig static void " + context.Identifier().GetText() + "(";
-            for (int i = 0; i < @params.Length; ++i)
-            {
-                s += "int32 " + @params[i];
-                if (i < @params.Length - 1)
-
-                    s += ",";
-            }
-            s += ") cil managed";
-
-            _result.AppendCodeLine(2, s + "{");
-            _result.AppendCodeLine(2, EmitLocals(GetParameters(@params.ToList())));
 
             for (int i = 0; i < @params.Length; ++i)
             {
-                currentScope.assignParam(@params[i].GetText(), new Value(x.Parameters[i]));
+                currentScope.assignParam(@params[i].GetText(), new Value(x.Arguments[i].Value));
                 currentScope.FunctionArguments.Add(@params[i].GetText());
             }
+            _result.BuildMethod(x.Arguments.Select(x => x.Type).ToArray(),
+            currentScope.FunctionArguments.Select(x => x).ToArray(), context.Identifier().GetText());
 
+            _result.AppendCodeLine(2, _result.EmitLocals(x.Arguments.Select(x => x.Type).ToArray()
+             , currentScope.FunctionArguments.Select(x => x).ToArray())); ;
             Visit(context.block());
             _result.AppendCodeLine(2, "ret");
             _result.AppendCodeLine(2, "}");
@@ -207,29 +198,33 @@ namespace AntlrCodeGenerator
         //visit function call
         public override Value VisitIdentifierFunctionCall(IdentifierFunctionCallContext ctx)
         {
-            var f = new Function();
-            f.FnName = ctx.Identifier().GetText();
+            var function = new Function();
+            function.FnName = ctx.Identifier().GetText();
+
             //fill the function call
             foreach (var vdx in ctx.exprList().expression())
             {
-                functionArguments.Add(vdx.GetText());
-                f.Parameters.Add(vdx.GetText());
+                var symbol = new Symbol();
+                var functionParameter = vdx.GetText();
+                symbol.Type = new Value(functionParameter).IsNumber() ? "int32" : "string";
+                symbol.Value = functionParameter;
+                function.Arguments.Add(symbol);
 
             }
-
+            var parameterList = string.Join(",", function.Arguments.Select(x => x.Type).ToArray());
 
             if (ctx.exprList() != null)
             {
 
                 Visit(ctx.exprList());
 
-                _result.AppendCodeLine(2, $"call  void Program::{ctx.Identifier().GetText()}({GetFunctionArguments(ctx)})");
+                _result.AppendCodeLine(2, $"call  void Program::{ctx.Identifier().GetText()}({parameterList})");
             }
             else
             {
                 _result.AppendCodeLine(2, $"call  void Program::{ctx.Identifier().GetText()}()");
             }
-            fns.Add(f);
+            fns.Add(function);
 
             return Value.VOID;
 
@@ -281,21 +276,25 @@ namespace AntlrCodeGenerator
                         return new Value(left.AsInt() + right.AsInt());
 
                     }
+
+                    if ((left.isString() || right.isString()) || (right.IsNumber() || left.IsNumber()))
+                    {
+                        if (left.IsNumber() || right.IsNumber())
+
+                            _result.AppendCodeLine(2, "call  string [mscorlib]System.Int32::ToString()");
+                        //append to string
+                        _result.AppendCodeLine(2, "call string string::Concat(string,string)");
+                        return new Value(left.AsString() + right.AsString());
+
+
+                    }
                     if (left.isString() && right.isString())
                     {
 
                         //append to string
                         _result.AppendCodeLine(2, "call string string::Concat(string,string)");
 
-                        return Value.VOID;
-
-                    }
-                    if ((left.isString() || right.isString()) || (right.IsNumber() || left.IsNumber()))
-                    {
-
-                        //append to string
-                        _result.AppendCodeLine(2, "call string string::Concat(string,string)");
-                        printOrder.Push("string");
+                        return new Value(left.AsString() + right.AsString());
 
                     }
 

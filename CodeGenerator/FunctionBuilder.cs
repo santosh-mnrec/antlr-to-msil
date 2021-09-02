@@ -10,6 +10,6 @@ namespace AntlrCodeGenerator.CodeGenerator
         public string FnName {get;set;}
 
         public List<string> LocalVariables {get;set;}=new List<string>();
-        public List<string> Parameters {get;set;}=new List<string>();
+        public List<Symbol> Arguments {get;set;}=new List<Symbol>();
     }
 }
