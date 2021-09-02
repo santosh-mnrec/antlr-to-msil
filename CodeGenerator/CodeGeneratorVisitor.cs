@@ -19,7 +19,7 @@ namespace AntlrCodeGenerator
 
         private CodeBuilder _result = new CodeBuilder();
 
-      
+
 
         string main = "";
         string fn = "";
@@ -27,6 +27,8 @@ namespace AntlrCodeGenerator
         private Scope currentScope = new Scope();
         private Stack<string> printOrder = new Stack<string>();
         private List<string> functionArguments = new List<string>();
+
+        private List<Function> fns = new List<Function>();
         public CodeGeneratorVisitor()
         {
             _result.AppendCodeLine(0, ".assembly extern mscorlib\n{\n}\n");
@@ -108,10 +110,7 @@ namespace AntlrCodeGenerator
             _result.AppendCodeLine(3, EmitLocals(varName));
             var variable = currentScope.Resolve(varName);
             var value = this.Visit(context.expression());
-            if (variable == null)
-            {
-                currentScope.Assign(varName, value);
-            }
+            currentScope.Assign(varName, value);
             _result.AppendCodeLine(3, OpCodes.StLoc + varName);
             return Value.VOID;
 
@@ -121,11 +120,11 @@ namespace AntlrCodeGenerator
         {
 
 
-            var identifier = ctx.Identifier().GetText();
+            m
             var variable = currentScope.Resolve(identifier);
 
 
-            if (currentScope.IsScope("function") && variable.ToString() != "NULL")
+            if (variable.ToString() != "NULL" && currentScope.FunctionArguments.Contains(identifier))
             {
                 if (!currentScope.Variables.ContainsKey(identifier))
                 {
@@ -155,6 +154,7 @@ namespace AntlrCodeGenerator
             var functionScope = new Scope(currentScope, "function");
             currentScope = functionScope;
 
+            var x = fns.FirstOrDefault(fn => fn.FnName == context.Identifier().GetText());
             var @params = context.idList() != null ? context.idList().Identifier() : new List<ITerminalNode>().ToArray();
             string s = "";
             s += ".method private hidebysig static void " + context.Identifier().GetText() + "(";
@@ -169,16 +169,12 @@ namespace AntlrCodeGenerator
 
             _result.AppendCodeLine(2, s + "{");
             _result.AppendCodeLine(2, EmitLocals(GetParameters(@params.ToList())));
-            //emit arg to stack
+
             for (int i = 0; i < @params.Length; ++i)
             {
-
-
-                functionScope.assignParam(@params[i].GetText(), new Value(functionArguments[i]));
-
+                currentScope.assignParam(@params[i].GetText(), new Value(x.Parameters[i]));
+                currentScope.FunctionArguments.Add(@params[i].GetText());
             }
-            functionScope.ArgCount = @params.Count();
-
 
             Visit(context.block());
             _result.AppendCodeLine(2, "ret");
@@ -211,12 +207,13 @@ namespace AntlrCodeGenerator
         //visit function call
         public override Value VisitIdentifierFunctionCall(IdentifierFunctionCallContext ctx)
         {
-
+            var f = new Function();
+            f.FnName = ctx.Identifier().GetText();
             //fill the function call
             foreach (var vdx in ctx.exprList().expression())
             {
                 functionArguments.Add(vdx.GetText());
-
+                f.Parameters.Add(vdx.GetText());
 
             }
 
@@ -232,6 +229,7 @@ namespace AntlrCodeGenerator
             {
                 _result.AppendCodeLine(2, $"call  void Program::{ctx.Identifier().GetText()}()");
             }
+            fns.Add(f);
 
             return Value.VOID;
 
@@ -278,8 +276,9 @@ namespace AntlrCodeGenerator
                     {
 
                         _result.AppendCodeLine(2, OpCodes.Add);
+                       
 
-                        return Value.VOID;
+                        return new Value(left.AsInt()+right.AsInt());
 
                     }
                     if (left.isString() && right.isString())
