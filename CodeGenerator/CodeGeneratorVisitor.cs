@@ -230,11 +230,11 @@ namespace AntlrCodeGenerator
 
                 Visit(ctx.exprList());
 
-                codeBuilder.LoadInstructions(2, $"call  void Program::{ctx.Identifier().GetText()}({parameterList})");
+                codeBuilder.LoadInstructions(2, $"call void Program::{ctx.Identifier().GetText()}({parameterList})");
             }
             else
             {
-                codeBuilder.LoadInstructions(2, $"call  void Program::{ctx.Identifier().GetText()}()");
+                codeBuilder.LoadInstructions(2, $"call void Program::{ctx.Identifier().GetText()}()");
             }
             fns.Add(function);
 
@@ -293,7 +293,7 @@ namespace AntlrCodeGenerator
                     {
                         if (left.IsNumber() || right.IsNumber())
 
-                            codeBuilder.LoadInstructions(2, "call  string [mscorlib]System.Int32::ToString()");
+                            codeBuilder.LoadInstructions(2, "call string [mscorlib]System.Int32::ToString()");
                         //append to string
                         codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
                         return new Value(left.AsString() + right.AsString());
