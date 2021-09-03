@@ -80,6 +80,18 @@ namespace AntlrCodeGenerator
 
             return s + ")";
         }
+        //assignment
+
+        public string EmitLocals(string parameter, string type)
+        {
+            string s = ".locals init ( ";
+
+            s += type + " " + parameter;
+
+
+
+            return s + ")";
+        }
 
 
 

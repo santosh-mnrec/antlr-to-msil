@@ -16,9 +16,12 @@ namespace AntlrCodeGenerator
 
         private CodeBuilder codeBuilder = new CodeBuilder();
 
-        string main = "";
-        string fn = "";
-        string header = "";
+        private string main = "";
+        private string fn = "";
+        private string header = "";
+        //visit for loop
+        private int _labelCount = 0;
+        private string labelPrev = "";
         private Scope currentScope = new Scope();
 
         private List<Function> fns = new List<Function>();
@@ -41,9 +44,7 @@ namespace AntlrCodeGenerator
             var x = Visit(context.block());
             codeBuilder.LoadInstructions(2, main);
             codeBuilder.LoadInstructions(2, "ret \n}");
-
             codeBuilder.LoadInstructions(2, fn);
-
             var code = header + codeBuilder.GetCode() + "\n}";
             File.WriteAllText(@"out\test.il", code);
             return Value.VOID;
@@ -53,7 +54,6 @@ namespace AntlrCodeGenerator
         {
 
             Visit(context.expression());
-
             if (context.GetChild(2).GetText().Contains("%d"))
             {
                 codeBuilder.EmitInBuiltFunctionCall("int32");
@@ -61,17 +61,9 @@ namespace AntlrCodeGenerator
             }
             else if (context.GetChild(2).GetText().Contains("%s"))
             {
-
                 codeBuilder.EmitInBuiltFunctionCall("string");
 
             }
-
-
-
-
-
-
-
 
             return Value.VOID;
         }
@@ -101,15 +93,14 @@ namespace AntlrCodeGenerator
         public override Value VisitAssignment(CompileParser.AssignmentContext context)
         {
 
-
             String varName = context.Identifier().GetText();
-            codeBuilder.LoadInstructions(3, EmitLocals(varName));
+
+            codeBuilder.LoadInstructions(3, codeBuilder.EmitLocals(varName, "int32"));
             var variable = currentScope.Resolve(varName);
             var value = this.Visit(context.expression());
             currentScope.Assign(varName, value);
             codeBuilder.LoadInstructions(3, OpCodes.StLoc, varName);
             return new Value(value);
-
 
         }
         public override Value VisitIdentifierExpression(IdentifierExpressionContext ctx)
@@ -123,21 +114,20 @@ namespace AntlrCodeGenerator
                 variable = currentScope.Parent?.Resolve(identifier);
             }
 
-
             if (variable != null && currentScope.FunctionArguments.Contains(identifier))
             {
                 if (!currentScope.Variables.ContainsKey(identifier))
                 {
-                    codeBuilder.LoadInstructions(2, OpCodes.LdInt4 , variable.ToString());
+                    codeBuilder.LoadInstructions(2, OpCodes.LdInt4, variable.ToString());
                 }
                 else
                 {
-                    codeBuilder.LoadInstructions(2, OpCodes.LdArg , ctx.Identifier().GetText());
+                    codeBuilder.LoadInstructions(2, OpCodes.LdArg, ctx.Identifier().GetText());
                 }
             }
             else
             {
-                codeBuilder.LoadInstructions(2, OpCodes.LdLoc , ctx.Identifier().GetText());
+                codeBuilder.LoadInstructions(2, OpCodes.LdLoc, ctx.Identifier().GetText());
             }
 
             return (variable == null || variable?.ToString() == "NULL") ? Value.VOID : new Value(variable);
@@ -150,10 +140,8 @@ namespace AntlrCodeGenerator
         public override Value VisitFunctionDecl(CompileParser.FunctionDeclContext context)
         {
             main += codeBuilder.GetCode();
-
             var functionScope = new Scope(currentScope, "function");
             currentScope = functionScope;
-
             var x = fns.FirstOrDefault(fn => fn.FnName == context.Identifier().GetText());
             var @params = context.idList() != null ? context.idList().Identifier() : new List<ITerminalNode>().ToArray();
 
@@ -164,7 +152,6 @@ namespace AntlrCodeGenerator
             }
             codeBuilder.BuildMethod(x.Arguments.Select(x => x.Type).ToArray(),
             currentScope.FunctionArguments.Select(x => x).ToArray(), context.Identifier().GetText());
-
             codeBuilder.LoadInstructions(2, codeBuilder.EmitLocals(x.Arguments.Select(x => x.Type).ToArray()
              , currentScope.FunctionArguments.Select(x => x).ToArray())); ;
             Visit(context.block());
@@ -179,22 +166,7 @@ namespace AntlrCodeGenerator
 
         }
 
-        //assignment
 
-        public string EmitLocals(params string[] parameters)
-        {
-            string s = ".locals init ( ";
-            for (int i = 0; i < parameters.Length; i++)
-            {
-
-                s += "int32 " + parameters[i];
-
-                if (i < parameters.Length - 1)
-                    s += ",";
-            }
-
-            return s + ")";
-        }
         //visit function call
         public override Value VisitIdentifierFunctionCall(IdentifierFunctionCallContext ctx)
         {
@@ -224,7 +196,6 @@ namespace AntlrCodeGenerator
 
             }
             var parameterList = string.Join(",", function?.Arguments.Select(x => x.Type).ToArray());
-
             if (ctx.exprList() != null)
             {
 
@@ -265,8 +236,7 @@ namespace AntlrCodeGenerator
         public override Value VisitStringExpression([NotNull] StringExpressionContext context)
         {
 
-
-            codeBuilder.LoadInstructions(2, "ldstr " , context.GetText());
+            codeBuilder.LoadInstructions(2, "ldstr ", context.GetText());
             return new Value(context.GetText());
         }
         public override Value VisitAddExpression([NotNull] AddExpressionContext context)
@@ -348,8 +318,6 @@ namespace AntlrCodeGenerator
                     {
 
                         codeBuilder.LoadInstructions(2, OpCodes.Mul);
-
-
                         return new Value(left.AsInt() + right.AsInt());
 
                     }
@@ -366,7 +334,6 @@ namespace AntlrCodeGenerator
                     {
 
                         codeBuilder.LoadInstructions(2, OpCodes.Rem);
-
                         return new Value(l.AsInt() + r.AsInt());
 
                     }
@@ -395,14 +362,12 @@ namespace AntlrCodeGenerator
         public override Value VisitNumberExpression(NumberExpressionContext ctx)
         {
 
-            codeBuilder.LoadInstructions(2, OpCodes.LdInt4 , ctx.Number().GetText());
+            codeBuilder.LoadInstructions(2, OpCodes.LdInt4, ctx.Number().GetText());
 
             return new Value(ctx.Number().GetText());
 
         }
-        //visit for loop
-        int _labelCount = 0;
-        string labelPrev = "";
+
 
         private string MakeLabel(int label)
         {
@@ -420,15 +385,19 @@ namespace AntlrCodeGenerator
             string start = context.expression(0).GetText();
             currentScope.Assign(varName, new Value(start));
 
-            codeBuilder.LoadInstructions(2, OpCodes.LdInt4 ,start);
+            codeBuilder.LoadInstructions(2, OpCodes.LdInt4, start);
+
+            var type = currentScope.Resolve(varName);
+
+            var dateType = type.IsNumber() ? "int32" : "string";
 
             //emitlocal
-            codeBuilder.LoadInstructions(2, EmitLocals(context.Identifier().GetText()));
+            codeBuilder.LoadInstructions(2, codeBuilder.EmitLocals(context.Identifier().GetText(), dateType));
             codeBuilder.InitializeVariable(varName, start);
             //load start value
             labelPrev = MakeLabel(_labelCount);
             _labelCount++;
-            codeBuilder.LoadInstructions(0, OpCodes.Br ,labelPrev);
+            codeBuilder.LoadInstructions(0, OpCodes.Br, labelPrev);
             string labelTo = MakeLabel(_labelCount);
             _labelCount++;
             _labelCount++;
@@ -442,7 +411,7 @@ namespace AntlrCodeGenerator
             //statemtn
             Visit(context.block());
             codeBuilder.LoadInstructions(2, OpCodes.Add);
-            codeBuilder.LoadInstructions(2, "stloc " , varName);
+            codeBuilder.LoadInstructions(2, "stloc ", varName);
 
             codeBuilder.LoadInstructions(0, labelPrev + ":");
             codeBuilder.LoadInstructions(2, "ldloc " + varName);
@@ -475,18 +444,18 @@ namespace AntlrCodeGenerator
 
             //emit if
             Visit(context.ifStat().expression());
-            codeBuilder.LoadInstructions(0, "brfalse " , labelElseIf);
+            codeBuilder.LoadInstructions(0, "brfalse ", labelElseIf);
             Visit(context.ifStat().block());
-            codeBuilder.LoadInstructions(2, "br " , labelEnd);
+            codeBuilder.LoadInstructions(2, "br ", labelEnd);
             //emit all child of elseif
             codeBuilder.LoadInstructions(0, labelElseIf + ":");
             foreach (var item in context.elseIfStat())
             {
                 //check expression
                 Visit(item.expression());
-                codeBuilder.LoadInstructions(0, "brfalse " , labelElse);
+                codeBuilder.LoadInstructions(0, "brfalse ", labelElse);
                 Visit(item.block());
-                codeBuilder.LoadInstructions(2, "br " , labelEnd);
+                codeBuilder.LoadInstructions(2, "br ", labelEnd);
 
             }
             //emit else
