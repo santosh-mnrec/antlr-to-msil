@@ -122,6 +122,9 @@ namespace AntlrCodeGenerator
 
             var identifier = ctx.Identifier().GetText();
             var variable = currentScope.Resolve(identifier);
+            if(!variable.IsNumber()){
+                variable=currentScope.Parent.Resolve(identifier);
+            }
 
 
             if (variable.ToString() != "NULL" && currentScope.FunctionArguments.Contains(identifier))
@@ -204,18 +207,25 @@ namespace AntlrCodeGenerator
             if (ctx.exprList() != null)
             {
                 //fill the function call
+
                 foreach (var vdx in ctx?.exprList()?.expression())
                 {
                     var symbol = new Symbol();
                     var functionParameter = vdx.GetText();
-                    symbol.Type = new Value(functionParameter).IsNumber() ? "int32" : "string";
+                    if (currentScope.Resolve(functionParameter) != null){
+                        symbol.Type = currentScope.Resolve(functionParameter).IsNumber() ? "int32" : "string";
+                    }
+                    else
+                    {
+                        symbol.Type = new Value(functionParameter).IsNumber() ? "int32" : "string";
+                    }
                     symbol.Value = functionParameter;
                     function.Arguments.Add(symbol);
 
                 }
-               
+
             }
-             var parameterList = string.Join(",", function?.Arguments.Select(x => x.Type).ToArray());
+            var parameterList = string.Join(",", function?.Arguments.Select(x => x.Type).ToArray());
 
             if (ctx.exprList() != null)
             {
@@ -378,8 +388,8 @@ namespace AntlrCodeGenerator
         public override Value VisitForStatement([NotNull] ForStatementContext context)
         {
 
-            var forScope = new Scope(currentScope, "for");
-            currentScope = forScope;
+            // var forScope = new Scope(currentScope, "for");
+            // currentScope = forScope;
             Visit(context.Identifier());
 
             string varName = context.Identifier().GetText();
