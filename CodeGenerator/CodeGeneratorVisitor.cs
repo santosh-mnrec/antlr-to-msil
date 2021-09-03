@@ -97,7 +97,10 @@ namespace AntlrCodeGenerator
 
             }
             if (context.expression() != null)
-                Visit(context.expression());
+            {
+                var v = Visit(context.expression());
+                return v;
+            }
             return Value.VOID;
         }
 
@@ -122,8 +125,9 @@ namespace AntlrCodeGenerator
 
             var identifier = ctx.Identifier().GetText();
             var variable = currentScope.Resolve(identifier);
-            if(!variable.IsNumber()){
-                variable=currentScope.Parent.Resolve(identifier);
+            if (variable != null && !variable.IsNumber())
+            {
+                variable = currentScope.Parent.Resolve(identifier);
             }
 
 
@@ -212,7 +216,8 @@ namespace AntlrCodeGenerator
                 {
                     var symbol = new Symbol();
                     var functionParameter = vdx.GetText();
-                    if (currentScope.Resolve(functionParameter) != null){
+                    if (currentScope.Resolve(functionParameter) != null)
+                    {
                         symbol.Type = currentScope.Resolve(functionParameter).IsNumber() ? "int32" : "string";
                     }
                     else
@@ -393,6 +398,7 @@ namespace AntlrCodeGenerator
             Visit(context.Identifier());
 
             string varName = context.Identifier().GetText();
+            System.Console.WriteLine(currentScope.Resolve(varName));
             string start = context.expression(0).GetText();
             currentScope.Assign(varName, new Value(start));
 
@@ -418,9 +424,11 @@ namespace AntlrCodeGenerator
             _result.AppendCodeLine(2, "stloc " + varName);
             //statemtn
             Visit(context.block());
+
             _result.AppendCodeLine(0, labelPrev + ":");
             _result.AppendCodeLine(2, "ldloc " + varName);
             Visit(context.expression(1));
+
             //compare
             _result.AppendCodeLine(2, "clt ");
 
