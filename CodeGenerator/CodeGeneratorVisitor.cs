@@ -14,12 +14,7 @@ namespace AntlrCodeGenerator
     public class CodeGeneratorVisitor : CompileBaseVisitor<Value>
     {
 
-
-
-
         private CodeBuilder _result = new CodeBuilder();
-
-
 
         string main = "";
         string fn = "";
@@ -45,7 +40,7 @@ namespace AntlrCodeGenerator
         public override Value VisitParse([NotNull] ParseContext context)
         {
 
-            Visit(context.block());
+          var x=   Visit(context.block());
             _result.AppendCodeLine(2, main);
             _result.AppendCodeLine(2, "ret \n}");
 
@@ -115,7 +110,7 @@ namespace AntlrCodeGenerator
             var value = this.Visit(context.expression());
             currentScope.Assign(varName, value);
             _result.AppendCodeLine(3, OpCodes.StLoc + varName);
-            return Value.VOID;
+            return new Value(value);
 
 
         }
@@ -125,13 +120,13 @@ namespace AntlrCodeGenerator
 
             var identifier = ctx.Identifier().GetText();
             var variable = currentScope.Resolve(identifier);
-            if (variable != null && !variable.IsNumber())
+            if ( !variable.IsNumber())
             {
-                variable = currentScope.Parent.Resolve(identifier);
+                variable = currentScope.Parent?.Resolve(identifier);
             }
 
 
-            if (variable.ToString() != "NULL" && currentScope.FunctionArguments.Contains(identifier))
+            if (variable !=null && currentScope.FunctionArguments.Contains(identifier))
             {
                 if (!currentScope.Variables.ContainsKey(identifier))
                 {
@@ -320,9 +315,17 @@ namespace AntlrCodeGenerator
                     break;
 
                 case CompileParser.Subtract:
-                    Visit(context.expression(0));
-                    Visit(context.expression(1));
-                    _result.AppendCodeLine(2, OpCodes.Sub);
+                    var l = Visit(context.expression(0));
+                    var r = Visit(context.expression(1));
+                    if (l.IsNumber() && r.IsNumber())
+                    {
+
+                        _result.AppendCodeLine(2, OpCodes.Sub);
+
+
+                        return new Value(l.AsInt() + r.AsInt());
+
+                    }
                     break;
 
                 default:
@@ -340,9 +343,18 @@ namespace AntlrCodeGenerator
             switch (context.op.Text)
             {
                 case "*":
-                    Visit(context.expression(0));
-                    Visit(context.expression(1));
-                    _result.AppendCodeLine(2, OpCodes.Mul);
+                    var left = this.Visit(context.expression(0));
+                    var right = this.Visit(context.expression(1));
+                    //if both are ints
+                    if (left.IsNumber() && right.IsNumber())
+                    {
+
+                        _result.AppendCodeLine(2, OpCodes.Mul);
+
+
+                        return new Value(left.AsInt() + right.AsInt());
+
+                    }
                     break;
                 case "/":
                     Visit(context.expression(0));
@@ -350,9 +362,16 @@ namespace AntlrCodeGenerator
                     _result.AppendCodeLine(2, OpCodes.Div);
                     break;
                 case "%":
-                    Visit(context.expression(0));
-                    Visit(context.expression(1));
-                    _result.AppendCodeLine(2, OpCodes.Rem);
+                   var l= Visit(context.expression(0));
+                    var r=Visit(context.expression(1));
+                    if(l.IsNumber() && r.IsNumber()){
+
+                        _result.AppendCodeLine(2, OpCodes.Rem);
+
+                        return new Value(l.AsInt() + r.AsInt());
+
+                    }
+                   
                     break;
                 default:
                     break;
@@ -420,10 +439,11 @@ namespace AntlrCodeGenerator
             _result.AppendCodeLine(2, OpCodes.LdLoc + varName);
             _result.AppendCodeLine(2, "ldc.i4 1 ");
 
-            _result.AppendCodeLine(2, OpCodes.Add);
-            _result.AppendCodeLine(2, "stloc " + varName);
+            
             //statemtn
             Visit(context.block());
+            _result.AppendCodeLine(2, OpCodes.Add);
+            _result.AppendCodeLine(2, "stloc " + varName);
 
             _result.AppendCodeLine(0, labelPrev + ":");
             _result.AppendCodeLine(2, "ldloc " + varName);
@@ -490,9 +510,10 @@ namespace AntlrCodeGenerator
             //switch case
             if (context.op.Text == "==")
             {
-                Visit(context.expression(0));
-                Visit(context.expression(1));
+               var l= Visit(context.expression(0));
+                var r=Visit(context.expression(1));
                 _result.AppendCodeLine(2, OpCodes.Ceq);
+                return new Value(l.AsInt() == r.AsInt());
             }
             if (context.op.Text == "!=")
             {
