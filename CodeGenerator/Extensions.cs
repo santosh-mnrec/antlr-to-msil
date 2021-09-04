@@ -20,6 +20,12 @@ namespace AntlrCodeGenerator.CodeGenerator
                 list.Add(symbol);
 
         }
+        public static string ToInt32(this string str)
+        {
+            if (str!=null && str.StartsWith("int"))
+                return "int32";
+            return str;
+        }
 
 
     }

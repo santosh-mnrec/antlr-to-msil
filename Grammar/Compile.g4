@@ -13,10 +13,11 @@ parse: block EOF;
 
 block: ( statement | functionDecl)* ('return' expression ';')? ;
 
-statement:  assignment ';' | functionCall ';' | forStatement | ifStatement;
+statement: varDeclration ';'| assignment ';' | functionCall ';' | forStatement | ifStatement;
 
 
-assignment: 'var'? Identifier (':' type)? indexes? '=' expression;
+varDeclration: type Identifier;
+assignment:  Identifier indexes? '=' expression;
 
 functionCall:
 	 Identifier '(' exprList? ')'  	# identifierFunctionCall
@@ -24,7 +25,7 @@ functionCall:
 
 typespecifier:'%d' |'%s';
 
-functionDecl: 'func' Identifier  '(' idList? ')'  ':' type '{' block '}'  ;
+functionDecl: 'func' Identifier  '(' idList? ')' '->' type  '{' block '}'  ;
 
 forStatement:
 	'for' Identifier '=' expression 'to' expression '{' block '}';
@@ -43,7 +44,7 @@ elseIfStat
 elseStat
  : Else '{' block '}'
  ;
-idList:  Identifier  (  ',' Identifier  )*   ;
+idList:  type Identifier  (  ',' type Identifier  )*   ;
 
 exprList: expression ( ',' expression)*;
 

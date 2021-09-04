@@ -25,7 +25,7 @@ namespace AntlrCodeGenerator
         private Scope currentScope = new Scope();
 
         private List<Function> fns = new List<Function>();
-        private Function currentFn = new Function();
+
         public CodeGeneratorVisitor()
         {
             codeBuilder.LoadInstructions(0, ".assembly extern mscorlib\n{\n}\n");
@@ -85,10 +85,23 @@ namespace AntlrCodeGenerator
             if (context.expression() != null)
             {
                 var blockResult = Visit(context.expression());
-              
-                
+
+
             }
             return Value.VOID;
+        }
+
+        public override Value VisitVarDeclration([NotNull] VarDeclrationContext context)
+        {
+
+            var varName = context.Identifier().GetText();
+            var type = context.GetChild(0).GetText();
+            currentScope.assignParam(varName, Value.VOID);
+
+            codeBuilder.LoadInstructions(2, codeBuilder.EmitLocals(varName, type.ToInt32()));
+
+
+            return new Value(varName, type);
         }
 
         //visit assigment
@@ -96,9 +109,8 @@ namespace AntlrCodeGenerator
         {
 
             String varName = context.Identifier().GetText();
+            var isVariableInSymbolTable = currentScope.Resolve(varName);
 
-            codeBuilder.LoadInstructions(3, codeBuilder.EmitLocals(varName, "int32"));
-            var variable = currentScope.Resolve(varName);
             var value = this.Visit(context.expression());
             currentScope.Assign(varName, value);
             codeBuilder.LoadInstructions(3, OpCodes.StLoc, varName);
@@ -111,25 +123,25 @@ namespace AntlrCodeGenerator
 
             var identifier = ctx.Identifier().GetText();
             var variable = currentScope.Resolve(identifier);
-            if (!variable.IsNumber())
+            if (variable != null)
             {
-                variable = currentScope.Parent?.Resolve(identifier);
-            }
 
-            if (variable != null && currentScope.FunctionArguments.Contains(identifier))
-            {
-                if (!currentScope.Variables.ContainsKey(identifier))
+                if (variable != null && currentScope.FunctionArguments.Contains(identifier))
                 {
-                    codeBuilder.LoadInstructions(2, OpCodes.LdInt4, variable.ToString());
+                    if (!currentScope.Variables.ContainsKey(identifier) && variable.Type == "int32")
+                    {
+                        codeBuilder.LoadInstructions(2, OpCodes.LdInt4, variable.ToString());
+                    }
+                    else
+                    {
+                        codeBuilder.LoadInstructions(2, OpCodes.LdArg, ctx.Identifier().GetText());
+                    }
                 }
+
                 else
                 {
-                    codeBuilder.LoadInstructions(2, OpCodes.LdArg, ctx.Identifier().GetText());
+                    codeBuilder.LoadInstructions(2, OpCodes.LdLoc, ctx.Identifier().GetText());
                 }
-            }
-            else
-            {
-                codeBuilder.LoadInstructions(2, OpCodes.LdLoc, ctx.Identifier().GetText());
             }
 
             return (variable == null || variable?.ToString() == "NULL") ? Value.VOID : new Value(variable);
@@ -145,18 +157,17 @@ namespace AntlrCodeGenerator
             var functionScope = new Scope(currentScope, "function");
             currentScope = functionScope;
             currentScope.ReturnType = context.GetChild(6).GetText();
-            currentFn.ReturnType = context.GetChild(6).GetText();
-            var x = fns.FirstOrDefault(fn => fn.FnName == context.Identifier().GetText());
+            var currentFunctionCall = fns.FirstOrDefault(fn => fn.FnName == context.Identifier().GetText());
             var @params = context.idList() != null ? context.idList().Identifier() : new List<ITerminalNode>().ToArray();
 
             for (int i = 0; i < @params.Length; ++i)
             {
-                currentScope.assignParam(@params[i].GetText(), new Value(x.Arguments[i].Value, context.GetChild(6).GetText()));
+                currentScope.assignParam(@params[i].GetText(), new Value(currentFunctionCall.Arguments[i].Value, currentFunctionCall.Arguments[i].Type));
                 currentScope.FunctionArguments.Add(@params[i].GetText());
             }
-            codeBuilder.BuildMethod(x.Arguments.Select(x => x.Type).ToArray(),
+            codeBuilder.BuildMethod(currentFunctionCall.Arguments.Select(x => x.Type).ToArray(),
             currentScope.FunctionArguments.Select(x => x).ToArray(), context.Identifier().GetText(), currentScope.ReturnType);
-            codeBuilder.LoadInstructions(2, codeBuilder.EmitLocals(x.Arguments.Select(x => x.Type).ToArray()
+            codeBuilder.LoadInstructions(2, codeBuilder.EmitLocals(currentFunctionCall.Arguments.Select(x => x.Type).ToArray()
              , currentScope.FunctionArguments.Select(x => x).ToArray())); ;
             Visit(context.block());
             codeBuilder.LoadInstructions(2, "ret");
@@ -166,6 +177,7 @@ namespace AntlrCodeGenerator
             currentScope = functionScope.Parent;
             functionScope = null;
 
+
             return Value.VOID;
 
         }
@@ -174,7 +186,8 @@ namespace AntlrCodeGenerator
         //visit function call
         public override Value VisitIdentifierFunctionCall(IdentifierFunctionCallContext ctx)
         {
-           
+
+            var currentFn = new Function();
             currentFn.FnName = ctx.Identifier().GetText();
 
             if (ctx.exprList() != null)
@@ -185,17 +198,25 @@ namespace AntlrCodeGenerator
                 {
                     var symbol = new Symbol();
                     var functionParameter = vdx.GetText();
-                    if (currentScope.Resolve(functionParameter) != null)
+                    if (vdx is IdentifierExpressionContext)
                     {
-                        symbol.Type = currentScope.Resolve(functionParameter).IsNumber() ? "int32" : "string";
-                        currentFn.ReturnType= symbol.Type;
+                        var varName = ((IdentifierExpressionContext)vdx).Identifier().GetText();
+                        var variable = currentScope.Resolve(functionParameter);
+                        if (currentScope.Resolve(varName) != null)
+                        {
+                            symbol.Type = currentScope.Resolve(varName).IsNumber() ? "int32" : "string";
+                            currentFn.ReturnType = symbol.Type;
+                            currentFn.Arguments.Add(symbol);
+                        }
                     }
                     else
                     {
+
                         symbol.Type = new Value(functionParameter).IsNumber() ? "int32" : "string";
+
+                        symbol.Value = functionParameter;
+                        currentFn.Arguments.Add(symbol);
                     }
-                    symbol.Value = functionParameter;
-                    currentFn.Arguments.Add(symbol);
 
                 }
 
@@ -266,10 +287,7 @@ namespace AntlrCodeGenerator
 
                     if ((left.isString() || right.isString()) || (right.IsNumber() || left.IsNumber()))
                     {
-                        if (left.IsNumber() || right.IsNumber())
 
-                            codeBuilder.LoadInstructions(2, "call string [mscorlib]System.Int32::ToString()");
-                        //append to string
                         codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
                         return new Value(left.AsString() + right.AsString());
 
@@ -277,8 +295,6 @@ namespace AntlrCodeGenerator
                     }
                     if (left.isString() && right.isString())
                     {
-
-                        //append to string
                         codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
 
                         return new Value(left.AsString() + right.AsString());
@@ -355,10 +371,7 @@ namespace AntlrCodeGenerator
         public override Value VisitExpressionExpression(CompileParser.ExpressionExpressionContext context)
         {
             Visit(context.expression());
-
             currentScope.Assign(context.expression().GetChild(0).GetText(), new Value(context.expression().GetChild(2).GetText()));
-
-
             return Value.VOID;
 
         }
@@ -368,7 +381,6 @@ namespace AntlrCodeGenerator
         {
 
             codeBuilder.LoadInstructions(2, OpCodes.LdInt4, ctx.Number().GetText());
-
             return new Value(ctx.Number().GetText());
 
         }
@@ -381,8 +393,7 @@ namespace AntlrCodeGenerator
         public override Value VisitForStatement([NotNull] ForStatementContext context)
         {
 
-            // var forScope = new Scope(currentScope, "for");
-            // currentScope = forScope;
+
             Visit(context.Identifier());
 
             string varName = context.Identifier().GetText();
