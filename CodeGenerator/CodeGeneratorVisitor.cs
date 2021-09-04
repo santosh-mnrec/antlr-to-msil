@@ -52,8 +52,10 @@ namespace AntlrCodeGenerator
 
         public override Value VisitPrintlnFunctionCall([NotNull] PrintlnFunctionCallContext context)
         {
+           
 
             Visit(context.expression());
+             System.Console.WriteLine($"Executed at {DateTime.UtcNow}");
             if (context.GetChild(2).GetText().Contains("%d"))
             {
                 codeBuilder.EmitInBuiltFunctionCall("int32");
