@@ -25,6 +25,7 @@ namespace AntlrCodeGenerator
         private Scope currentScope = new Scope();
 
         private List<Function> fns = new List<Function>();
+        private Function currentFn = new Function();
         public CodeGeneratorVisitor()
         {
             codeBuilder.LoadInstructions(0, ".assembly extern mscorlib\n{\n}\n");
@@ -83,8 +84,9 @@ namespace AntlrCodeGenerator
             }
             if (context.expression() != null)
             {
-                var v = Visit(context.expression());
-                return v;
+                var blockResult = Visit(context.expression());
+              
+                
             }
             return Value.VOID;
         }
@@ -142,16 +144,18 @@ namespace AntlrCodeGenerator
             main += codeBuilder.GetCode();
             var functionScope = new Scope(currentScope, "function");
             currentScope = functionScope;
+            currentScope.ReturnType = context.GetChild(6).GetText();
+            currentFn.ReturnType = context.GetChild(6).GetText();
             var x = fns.FirstOrDefault(fn => fn.FnName == context.Identifier().GetText());
             var @params = context.idList() != null ? context.idList().Identifier() : new List<ITerminalNode>().ToArray();
 
             for (int i = 0; i < @params.Length; ++i)
             {
-                currentScope.assignParam(@params[i].GetText(), new Value(x.Arguments[i].Value));
+                currentScope.assignParam(@params[i].GetText(), new Value(x.Arguments[i].Value, context.GetChild(6).GetText()));
                 currentScope.FunctionArguments.Add(@params[i].GetText());
             }
             codeBuilder.BuildMethod(x.Arguments.Select(x => x.Type).ToArray(),
-            currentScope.FunctionArguments.Select(x => x).ToArray(), context.Identifier().GetText());
+            currentScope.FunctionArguments.Select(x => x).ToArray(), context.Identifier().GetText(), currentScope.ReturnType);
             codeBuilder.LoadInstructions(2, codeBuilder.EmitLocals(x.Arguments.Select(x => x.Type).ToArray()
              , currentScope.FunctionArguments.Select(x => x).ToArray())); ;
             Visit(context.block());
@@ -170,8 +174,8 @@ namespace AntlrCodeGenerator
         //visit function call
         public override Value VisitIdentifierFunctionCall(IdentifierFunctionCallContext ctx)
         {
-            var function = new Function();
-            function.FnName = ctx.Identifier().GetText();
+           
+            currentFn.FnName = ctx.Identifier().GetText();
 
             if (ctx.exprList() != null)
             {
@@ -184,30 +188,31 @@ namespace AntlrCodeGenerator
                     if (currentScope.Resolve(functionParameter) != null)
                     {
                         symbol.Type = currentScope.Resolve(functionParameter).IsNumber() ? "int32" : "string";
+                        currentFn.ReturnType= symbol.Type;
                     }
                     else
                     {
                         symbol.Type = new Value(functionParameter).IsNumber() ? "int32" : "string";
                     }
                     symbol.Value = functionParameter;
-                    function.Arguments.Add(symbol);
+                    currentFn.Arguments.Add(symbol);
 
                 }
 
             }
-            var parameterList = string.Join(",", function?.Arguments.Select(x => x.Type).ToArray());
+            var parameterList = string.Join(",", currentFn?.Arguments.Select(x => x.Type).ToArray());
             if (ctx.exprList() != null)
             {
 
                 Visit(ctx.exprList());
 
-                codeBuilder.LoadInstructions(2, $"call void Program::{ctx.Identifier().GetText()}({parameterList})");
+                codeBuilder.LoadInstructions(2, $"call {currentFn?.Arguments[0].Type} Program::{ctx.Identifier().GetText()}({parameterList})");
             }
             else
             {
-                codeBuilder.LoadInstructions(2, $"call void Program::{ctx.Identifier().GetText()}()");
+                codeBuilder.LoadInstructions(2, $"call {currentFn?.Arguments[0].Type}  Program::{ctx.Identifier().GetText()}()");
             }
-            fns.Add(function);
+            fns.Add(currentFn);
 
             return Value.VOID;
 

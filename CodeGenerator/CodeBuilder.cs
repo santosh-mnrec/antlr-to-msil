@@ -48,10 +48,13 @@ namespace AntlrCodeGenerator
         }
 
 
-        public void BuildMethod(string[] types, string[] parameters, string methodName)
+        public void BuildMethod(string[] types, string[] parameters, string methodName,string returnType="void")
         {
             var s = string.Empty;
-            s += ".method private hidebysig static void " + methodName + "(";
+            if(returnType=="int"){
+                returnType="int32";
+            }
+            s += $".method private hidebysig static {returnType}  {methodName}(";
             for (int i = 0; i < types.Length; ++i)
             {
                 s += types[i] + " " + parameters[i];

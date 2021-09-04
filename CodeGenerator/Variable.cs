@@ -7,18 +7,19 @@ namespace AntlrCodeGenerator
     public class Value : IComparable<Value>
 
     {
-       
+
         public static readonly Value VOID = new Value();
-       
+
 
         private readonly object value;
+        public string Type { get; set; }
 
         public Value()
         {
-           
-            value = new object();
-        }
 
+            value = new object();
+            Type = "int32";
+        }
         public Value(object input)
         {
             if (input == null)
@@ -26,8 +27,23 @@ namespace AntlrCodeGenerator
                 throw new Exception("v == null");
             }
             value = input;
+
             // only accept bool, list, number or string types
-            if (!(Isbool()  || IsNumber() || isString() || isNull()))
+            if (!(Isbool() || IsNumber() || isString() || isNull()))
+            {
+                throw new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
+            }
+        }
+        public Value(object input, string type)
+        {
+            if (input == null)
+            {
+                throw new Exception("v == null");
+            }
+            value = input;
+            Type = type;
+            // only accept bool, list, number or string types
+            if (!(Isbool() || IsNumber() || isString() || isNull()))
             {
                 throw new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
             }
@@ -137,13 +153,13 @@ namespace AntlrCodeGenerator
 
         public bool IsNumber()
         {
-           //can convert to int32
-          return int.TryParse(value.ToString(), out int result);
-         
+            //can convert to int32
+            return int.TryParse(value.ToString(), out int result);
+
 
         }
 
-      
+
 
         public bool isNull()
         {

@@ -12,6 +12,8 @@ namespace AntlrCodeGenerator
         public List<string> FunctionArguments { get; set; }=new     List<string>();
         public int ArgCount { get; set; }
         public string ScopeName { get; set; }
+        //return type of function
+        public string ReturnType { get; set; }
 
         public bool IsScope(string name)
         {

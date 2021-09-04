@@ -1,6 +1,5 @@
 grammar Compile;
 
-
 @members {}
 @header {
 
@@ -8,23 +7,24 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-} 
+}
 
 parse: block EOF;
 
 block: ( statement | functionDecl)* ('return' expression ';')? ;
 
-statement: assignment ';' | functionCall ';' | forStatement | ifStatement;
+statement:  assignment ';' | functionCall ';' | forStatement | ifStatement;
 
-assignment: Identifier indexes? '=' expression;
+
+assignment: 'var'? Identifier (':' type)? indexes? '=' expression;
 
 functionCall:
-	Identifier '(' exprList? ')' 	# identifierFunctionCall
+	 Identifier '(' exprList? ')'  	# identifierFunctionCall
 	| Println '(' typespecifier ',' expression? ')'	# printlnFunctionCall;
 
 typespecifier:'%d' |'%s';
 
-functionDecl: 'func' Identifier '(' idList? ')' '{' block '}';
+functionDecl: 'func' Identifier  '(' idList? ')'  ':' type '{' block '}'  ;
 
 forStatement:
 	'for' Identifier '=' expression 'to' expression '{' block '}';
@@ -43,7 +43,7 @@ elseIfStat
 elseStat
  : Else '{' block '}'
  ;
-idList: Identifier ( ',' Identifier)*;
+idList:  Identifier  (  ',' Identifier  )*   ;
 
 exprList: expression ( ',' expression)*;
 
@@ -62,6 +62,12 @@ expression:
 indexes: ( '[' expression ']')+;
 
 Println: 'println';
+type:
+    'int'
+    | 'string'
+    | 'bool'
+    | 'float'
+    ;
 
 Input: 'input';
 Add: '+';
