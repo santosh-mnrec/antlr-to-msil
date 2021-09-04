@@ -5,13 +5,22 @@ namespace AntlrCodeGenerator.CodeGenerator
     public static class Extensions
     {
 
-        public static void TryAddOrUpdate(this Dictionary<string, Value> dict, string key, Value value){
+        public static void TryAddOrUpdate(this Dictionary<string, Value> dict, string key, Value value)
+        {
             if (dict.ContainsKey(key))
                 dict[key] = value;
             else
                 dict.Add(key, value);
         }
-        
-        
+        public static void AddOrUpdate(this List<Symbol> list, Symbol symbol)
+        {
+            if (list.Contains(symbol))
+                list[list.IndexOf(symbol)] = symbol;
+            else
+                list.Add(symbol);
+
+        }
+
+
     }
 }
