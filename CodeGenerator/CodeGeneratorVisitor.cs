@@ -14,7 +14,7 @@ namespace AntlrCodeGenerator
     public class CodeGeneratorVisitor : CompileBaseVisitor<Value>
     {
 
-        private CodeBuilder codeBuilder = new CodeBuilder();
+        private readonly CodeBuilder codeBuilder = new CodeBuilder();
 
         private string main = "";
         private string fn = "";
@@ -41,8 +41,7 @@ namespace AntlrCodeGenerator
 
         public override Value VisitParse([NotNull] ParseContext context)
         {
-
-            var x = Visit(context.block());
+            _ = Visit(context.block());
             codeBuilder.LoadInstructions(2, main);
             codeBuilder.LoadInstructions(2, "ret \n}");
             codeBuilder.LoadInstructions(2, fn);
@@ -84,7 +83,7 @@ namespace AntlrCodeGenerator
             }
             if (context.expression() != null)
             {
-                var blockResult = Visit(context.expression());
+                _ = Visit(context.expression());
 
 
             }
@@ -109,7 +108,7 @@ namespace AntlrCodeGenerator
         {
 
             String varName = context.Identifier().GetText();
-            var isVariableInSymbolTable = currentScope.Resolve(varName);
+            Value isVariableInSymbolTable = currentScope.Resolve(varName);
 
             var value = this.Visit(context.expression());
             currentScope.Assign(varName, value);
@@ -198,9 +197,9 @@ namespace AntlrCodeGenerator
                 {
                     var symbol = new Symbol();
                     var functionParameter = vdx.GetText();
-                    if (vdx is IdentifierExpressionContext)
+                    if (vdx is IdentifierExpressionContext context)
                     {
-                        var varName = ((IdentifierExpressionContext)vdx).Identifier().GetText();
+                        var varName = context.Identifier().GetText();
                         var variable = currentScope.Resolve(functionParameter);
                         if (currentScope.Resolve(varName) != null)
                         {
@@ -285,7 +284,7 @@ namespace AntlrCodeGenerator
 
                     }
 
-                    if ((left.isString() || right.isString()) || (right.IsNumber() || left.IsNumber()))
+                    if ((left.IsString() || right.IsString()) || (right.IsNumber() || left.IsNumber()))
                     {
 
                         codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
@@ -293,7 +292,7 @@ namespace AntlrCodeGenerator
 
 
                     }
-                    if (left.isString() && right.isString())
+                    if (left.IsString() && right.IsString())
                     {
                         codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
 

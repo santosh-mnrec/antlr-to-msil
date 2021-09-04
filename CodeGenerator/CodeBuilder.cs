@@ -4,11 +4,10 @@ namespace AntlrCodeGenerator
 {
     public class CodeBuilder
     {
-        private StringBuilder _result = new StringBuilder();
+        private readonly StringBuilder _result = new StringBuilder();
 
 
         public void Append(string code) => _result.Append(code);
-        private void AppendCode(string code) => _result.Append(code);
 
         private void AppendCodeLine(int pos, string code)
         {
@@ -57,7 +56,7 @@ namespace AntlrCodeGenerator
             s += $".method private hidebysig static {returnType}  {methodName}(";
             for (int i = 0; i < types.Length; ++i)
             {
-                s += types[i] + " " + parameters[i];
+                s += $"{types[i]} {parameters[i]}";
                 if (i < parameters.Length - 1)
 
                     s += ",";
@@ -75,7 +74,7 @@ namespace AntlrCodeGenerator
             {
 
                 var type = types[i];
-                s += type + " " + parameters[i];
+                s += $"{type} {parameters[i]}";
 
                 if (i < parameters.Length - 1)
                     s += ",";
