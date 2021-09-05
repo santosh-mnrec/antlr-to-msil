@@ -9,6 +9,36 @@ namespace AntlrCodeGenerator
 
         public void Append(string code) => _result.Append(code);
 
+        public void EmitTryCatch(string labelTo)
+        {
+
+          
+            AppendCodeLine(2, "nop");
+            AppendCodeLine(2, " leave.s " + labelTo);
+            AppendCodeLine(2, "}");
+
+        }
+
+        public void EmitCatchIL(string labelTo)
+        {
+
+
+           
+            AppendCodeLine(2, "catch [mscorlib]System.Exception");
+             AppendCodeLine(2, "{");
+            AppendCodeLine(2, "stloc.0");
+            AppendCodeLine(2, $" nop");
+            AppendCodeLine(2, "ldloc.0");
+            AppendCodeLine(2, "callvirt instance string [mscorlib]System.Exception::get_Message()");
+            AppendCodeLine(2, "call void [System.Console]System.Console::WriteLine(string)");
+            AppendCodeLine(2, "nop");
+            AppendCodeLine(2, "nop");
+            AppendCodeLine(2, "leave.s " + labelTo);
+            AppendCodeLine(2, "}");
+            AppendCodeLine(2, $"{labelTo}: ret");
+            AppendCodeLine(2, "}");
+
+        }
         private void AppendCodeLine(int pos, string code)
         {
 
@@ -47,11 +77,12 @@ namespace AntlrCodeGenerator
         }
 
 
-        public void BuildMethod(string[] types, string[] parameters, string methodName,string returnType="void")
+        public void BuildMethod(string[] types, string[] parameters, string methodName, string returnType = "void")
         {
             var s = string.Empty;
-            if(returnType=="int"){
-                returnType="int32";
+            if (returnType == "int")
+            {
+                returnType = "int32";
             }
             s += $".method private hidebysig static {returnType}  {methodName}(";
             for (int i = 0; i < types.Length; ++i)

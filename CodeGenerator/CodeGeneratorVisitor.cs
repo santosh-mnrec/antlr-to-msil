@@ -35,17 +35,35 @@ namespace AntlrCodeGenerator
             codeBuilder.LoadInstructions(0, " .method private hidebysig static void  Main(string[] args) cil managed {");
             codeBuilder.LoadInstructions(2, " .entrypoint");
             codeBuilder.LoadInstructions(2, " .maxstack  8");
+            codeBuilder.LoadInstructions(2, " .locals init (class [mscorlib]System.Exception e)");
+            codeBuilder.LoadInstructions(2, " .try");
+            codeBuilder.LoadInstructions(2, " {");
+
+
+
+
+
             header = codeBuilder.GetCode();
+
         }
 
 
         public override Value VisitParse([NotNull] ParseContext context)
         {
+            int labelCount = 0;
+            var labelTo = MakeLabel(labelCount);
+            labelCount++;
+             
             _ = Visit(context.block());
+           
             codeBuilder.LoadInstructions(2, main);
-            codeBuilder.LoadInstructions(2, "ret \n}");
+               codeBuilder.EmitTryCatch(labelTo);
+              codeBuilder.EmitCatchIL(labelTo);
+           // codeBuilder.LoadInstructions(2, "ret \n}");
             codeBuilder.LoadInstructions(2, fn);
+         
             var code = header + codeBuilder.GetCode() + "\n}";
+          
             File.WriteAllText(@"out\test.il", code);
             return Value.VOID;
         }
@@ -362,7 +380,7 @@ namespace AntlrCodeGenerator
                         {
 
                             codeBuilder.LoadInstructions(2, OpCodes.Add);
-                          
+
                             return new Value(left);
 
                         }
@@ -621,7 +639,7 @@ namespace AntlrCodeGenerator
                 codeBuilder.LoadInstructions(2, OpCodes.LdInt4 + "0");
                 codeBuilder.LoadInstructions(2, OpCodes.Ceq);
             }
-             if (context.op.Text == "<=")
+            if (context.op.Text == "<=")
             {
                 Visit(context.expression(0));
                 Visit(context.expression(1));
