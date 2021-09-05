@@ -91,15 +91,15 @@ namespace AntlrCodeGenerator
         public override Value VisitBlock(CompileParser.BlockContext context)
         {
 
-            foreach (var vdx in context.statement())
+            foreach (var statement in context.statement())
             {
-                this.Visit(vdx);
+                this.Visit(statement);
 
             }
 
-            foreach (var fdx in context.functionDecl())
+            foreach (var functionDecl in context.functionDecl())
             {
-                this.Visit(fdx);
+                this.Visit(functionDecl);
 
             }
             if (context.expression() != null)
@@ -131,8 +131,6 @@ namespace AntlrCodeGenerator
         {
 
             String varName = context.Identifier().GetText();
-            Value isVariableInSymbolTable = currentScope.Resolve(varName);
-
             var value = this.Visit(context.expression());
             currentScope.Assign(varName, value);
             codeBuilder.LoadInstructions(3, OpCodes.StLoc, varName);
@@ -141,7 +139,6 @@ namespace AntlrCodeGenerator
         }
         public override Value VisitIdentifierExpression(IdentifierExpressionContext ctx)
         {
-
 
             var identifier = ctx.Identifier().GetText();
             var variable = currentScope.Resolve(identifier);
@@ -169,7 +166,7 @@ namespace AntlrCodeGenerator
             {
                 foreach (var index in ctx.indexes().expression())
                 {
-                    var x = this.Visit(index);
+                    var exp = this.Visit(index);
 
                 }
             }
@@ -324,14 +321,14 @@ namespace AntlrCodeGenerator
 
                 foreach (var exp in ctx.indexes().expression())
                 {
-                    var x = Visit(exp);
+                    var value = Visit(exp);
 
                 }
             }
             return new Value(val, val.Type);
 
         }
-  
+
 
         //visit add expression
 
@@ -665,20 +662,7 @@ namespace AntlrCodeGenerator
             return Value.VOID;
         }
         #region Helper
-        public string[] GetParameters(List<ITerminalNode> parameters)
-        {
-            var arguments = new string[parameters.Count];
-            for (int i = 0; i < parameters.Count(); i++)
-            {
-                arguments[i] = parameters[i].GetText();
 
-            }
-            return arguments;
-        }
-        private bool IsFunctionContext(ParserRuleContext context)
-        {
-            return context.Parent is FunctionDeclContext;
-        }
 
         #endregion
 
