@@ -17,7 +17,7 @@ block: ( statement | functionDecl)* ('return' expression ';')? ;
 statement: httpRequest ';' | varDeclration ';'| assignment ';' | functionCall ';' | forStatement | ifStatement;
 
 
-httpRequest: 'request' Identifier  #HttpCall ;
+httpRequest: 'readFile' Identifier  #HttpCall ;
 varDeclration: type Identifier;
 assignment:  Identifier indexes? '=' expression;
 
