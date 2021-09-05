@@ -50,9 +50,9 @@ namespace AntlrCodeGenerator
 
         public override Value VisitParse([NotNull] ParseContext context)
         {
-            int labelCount = 0;
-            var labelTo = MakeLabel(labelCount);
-            labelCount++;
+           
+            var labelTo = MakeLabel(_labelCount);
+            _labelCount++;
 
             _ = Visit(context.block());
 
