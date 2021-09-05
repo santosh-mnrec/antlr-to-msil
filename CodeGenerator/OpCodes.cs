@@ -21,7 +21,7 @@ namespace AntlrCodeGenerator.CodeGenerator
         public static string Div = "div";
         public static string Ceq = "ceq";
         public static string Cgt = "cgt";
-        public static string Cgt_Un = "cgt.un";
+        public static string Cgt_Un = "cgt";
         public static string Ret="ret";
     }
 

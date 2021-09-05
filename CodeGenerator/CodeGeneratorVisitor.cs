@@ -52,10 +52,10 @@ namespace AntlrCodeGenerator
 
         public override Value VisitPrintlnFunctionCall([NotNull] PrintlnFunctionCallContext context)
         {
-           
+
 
             Visit(context.expression());
-             System.Console.WriteLine($"Executed at {DateTime.UtcNow}");
+            System.Console.WriteLine($"Executed at {DateTime.UtcNow}");
             if (context.GetChild(2).GetText().Contains("%d"))
             {
                 codeBuilder.EmitInBuiltFunctionCall("int32");
@@ -85,7 +85,9 @@ namespace AntlrCodeGenerator
             }
             if (context.expression() != null)
             {
-                _ = Visit(context.expression());
+                var returnValue = Visit(context.expression());
+
+                return returnValue;
 
 
             }
@@ -144,6 +146,14 @@ namespace AntlrCodeGenerator
                     codeBuilder.LoadInstructions(2, OpCodes.LdLoc, ctx.Identifier().GetText());
                 }
             }
+            if (ctx.indexes() != null)
+            {
+                foreach (var index in ctx.indexes().expression())
+                {
+                    var x = this.Visit(index);
+
+                }
+            }
 
             return (variable == null || variable?.ToString() == "NULL") ? Value.VOID : new Value(variable);
 
@@ -165,11 +175,14 @@ namespace AntlrCodeGenerator
             {
                 currentScope.assignParam(@params[i].GetText(), new Value(currentFunctionCall.Arguments[i].Value, currentFunctionCall.Arguments[i].Type));
                 currentScope.FunctionArguments.Add(@params[i].GetText());
+
             }
+            currentScope.ArgCount = @params.Length;
             codeBuilder.BuildMethod(currentFunctionCall.Arguments.Select(x => x.Type).ToArray(),
             currentScope.FunctionArguments.Select(x => x).ToArray(), context.Identifier().GetText(), currentScope.ReturnType);
             codeBuilder.LoadInstructions(2, codeBuilder.EmitLocals(currentFunctionCall.Arguments.Select(x => x.Type).ToArray()
              , currentScope.FunctionArguments.Select(x => x).ToArray())); ;
+
             Visit(context.block());
             codeBuilder.LoadInstructions(2, "ret");
             codeBuilder.LoadInstructions(2, "}");
@@ -184,24 +197,38 @@ namespace AntlrCodeGenerator
         }
 
 
-        //visit function call
         public override Value VisitIdentifierFunctionCall(IdentifierFunctionCallContext ctx)
         {
+            Function currentFn;
+            Value value = Value.VOID;
 
-            var currentFn = new Function();
-            currentFn.FnName = ctx.Identifier().GetText();
+            var isRecursive = fns.Any(x => x.FnName == ctx.Identifier().GetText());
+            if (isRecursive)
+            {
+                currentFn = fns.FirstOrDefault(fn => fn.FnName == ctx.Identifier().GetText());
+            }
 
-            if (ctx.exprList() != null)
+            else
+            {
+
+                currentFn = new Function();
+                currentFn.FnName = ctx.Identifier().GetText();
+
+            }
+
+            if (ctx.exprList() != null && !isRecursive)
             {
                 //fill the function call
 
                 foreach (var vdx in ctx?.exprList()?.expression())
                 {
+
+                    var z = Visit(vdx);
                     var symbol = new Symbol();
                     var functionParameter = vdx.GetText();
                     if (vdx is IdentifierExpressionContext context)
                     {
-                        var varName = context.Identifier().GetText();
+                        var varName = context.Identifier().GetText().Length > 1 ? context.Identifier().GetText().Substring(1) : context.Identifier().GetText();
                         var variable = currentScope.Resolve(functionParameter);
                         if (currentScope.Resolve(varName) != null)
                         {
@@ -212,31 +239,71 @@ namespace AntlrCodeGenerator
                     }
                     else
                     {
+                        functionParameter = functionParameter.Length > 1 ? functionParameter.Split("-")[0] : functionParameter;
+                        if (currentScope.Resolve(functionParameter) != null)
+                        {
+                            symbol.Type = currentScope.Resolve(functionParameter).IsNumber() ? "int32" : "string";
+                            var variable = currentScope.Resolve(functionParameter);
+                            currentScope.Assign(functionParameter, new Value(variable, symbol.Type));
+                            value = new Value(functionParameter, symbol.Type);
 
-                        symbol.Type = new Value(functionParameter).IsNumber() ? "int32" : "string";
+                        }
+                        else
+                        {
+                            symbol.Type = new Value(functionParameter).IsNumber() ? "int32" : "string";
+                        }
 
                         symbol.Value = functionParameter;
+                        value = new Value(functionParameter, symbol.Type);
                         currentFn.Arguments.Add(symbol);
                     }
 
                 }
+                var parameterList = string.Join(",", currentFn?.Arguments.Select(x => x.Type).ToArray());
 
-            }
-            var parameterList = string.Join(",", currentFn?.Arguments.Select(x => x.Type).ToArray());
-            if (ctx.exprList() != null)
-            {
+                if (ctx.exprList() != null)
+                {
 
-                Visit(ctx.exprList());
 
-                codeBuilder.LoadInstructions(2, $"call {currentFn?.Arguments[0].Type} Program::{ctx.Identifier().GetText()}({parameterList})");
+                    codeBuilder.LoadInstructions(2, $"call {currentFn?.Arguments[0].Type} Program::{ctx.Identifier().GetText()}({parameterList})");
+                }
+                else if (ctx.exprList() == null)
+                {
+                    codeBuilder.LoadInstructions(2, $"call {currentFn?.Arguments[0].Type}  Program::{ctx.Identifier().GetText()}()");
+                }
+
+
             }
             else
             {
-                codeBuilder.LoadInstructions(2, $"call {currentFn?.Arguments[0].Type}  Program::{ctx.Identifier().GetText()}()");
+                //visit all the arguments
+
+                foreach (var vdx in ctx?.exprList()?.expression())
+                {
+                    var z = Visit(vdx);
+                }
+                var parameterList = string.Join(",", currentFn?.Arguments.Select(x => x.Type).ToArray());
+                codeBuilder.LoadInstructions(2, $"call {currentFn?.Arguments[0].Type} Program::{ctx.Identifier().GetText()}({parameterList})");
             }
+
             fns.Add(currentFn);
 
-            return Value.VOID;
+            return value;
+
+        }
+        public override Value VisitFunctionCallExpression(FunctionCallExpressionContext ctx)
+        {
+            var val = Visit(ctx.functionCall());
+            if (ctx.indexes() != null)
+            {
+
+                foreach (var exp in ctx.indexes().expression())
+                {
+                    var x = Visit(exp);
+
+                }
+            }
+            return new Value(val, val.Type);
 
         }
         //get input arguements
@@ -281,16 +348,30 @@ namespace AntlrCodeGenerator
 
                         codeBuilder.LoadInstructions(2, OpCodes.Add);
 
-
+                        if (left.Type == "int32" && right.Type == "int32")
+                        {
+                            return new Value(left);
+                        }
                         return new Value(left.AsInt() + right.AsInt());
 
                     }
 
                     if ((left.IsString() || right.IsString()) || (right.IsNumber() || left.IsNumber()))
                     {
+                        if (left.Type == "int32" || right.Type == "int32")
+                        {
 
-                        codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
-                        return new Value(left.AsString() + right.AsString());
+                            codeBuilder.LoadInstructions(2, OpCodes.Add);
+                          
+                            return new Value(left);
+
+                        }
+                        else
+                        {
+
+                            codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
+                            return new Value(left.AsString() + right.AsString());
+                        }
 
 
                     }
@@ -336,11 +417,14 @@ namespace AntlrCodeGenerator
                     var left = this.Visit(context.expression(0));
                     var right = this.Visit(context.expression(1));
                     //if both are ints
-                    if (left.IsNumber() && right.IsNumber())
+                    if ((left.IsNumber() || (left.Type == "int32") && (right.IsNumber() || right.Type == "int32")))
                     {
 
                         codeBuilder.LoadInstructions(2, OpCodes.Mul);
-                        return new Value(left.AsInt() + right.AsInt());
+                        if (left.IsNumber() && right.IsNumber())
+                            return new Value(left.AsInt() * right.AsInt());
+                        else
+                            return new Value(left);
 
                     }
                     break;
@@ -371,7 +455,16 @@ namespace AntlrCodeGenerator
         }
         public override Value VisitExpressionExpression(CompileParser.ExpressionExpressionContext context)
         {
-            Visit(context.expression());
+            var value = Visit(context.expression());
+
+
+            if (context.indexes() != null)
+            {
+                foreach (var exp in context.indexes().expression())
+                {
+                    value = Visit(exp);
+                }
+            }
             currentScope.Assign(context.expression().GetChild(0).GetText(), new Value(context.expression().GetChild(2).GetText()));
             return Value.VOID;
 
@@ -479,7 +572,7 @@ namespace AntlrCodeGenerator
             codeBuilder.LoadInstructions(0, labelElse + ":");
             if (context.elseStat() != null)
             {
-                Visit(context.elseStat());
+                Visit(context.elseStat().block());
             }
             // //emit end
             codeBuilder.LoadInstructions(0, labelEnd + ":");
@@ -521,6 +614,14 @@ namespace AntlrCodeGenerator
                 codeBuilder.LoadInstructions(2, OpCodes.Clt);
             }
             if (context.op.Text == ">=")
+            {
+                Visit(context.expression(0));
+                Visit(context.expression(1));
+                codeBuilder.LoadInstructions(2, OpCodes.Cgt_Un);
+                codeBuilder.LoadInstructions(2, OpCodes.LdInt4 + "0");
+                codeBuilder.LoadInstructions(2, OpCodes.Ceq);
+            }
+             if (context.op.Text == "<=")
             {
                 Visit(context.expression(0));
                 Visit(context.expression(1));
