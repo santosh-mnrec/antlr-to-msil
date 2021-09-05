@@ -23,7 +23,7 @@ statement:
 
 httpRequest: 'readFile' Identifier # HttpCall;
 varDeclration: type Identifier;
-assignment: Identifier indexes? '=' expression;
+assignment: Identifier '=' expression;
 
 functionCall:
 	Identifier '(' exprList? ')'					# identifierFunctionCall
@@ -53,13 +53,13 @@ expression:
 	| expression op = ('>=' | '<=' | '>' | '<') expression	# compExpression
 	| expression op = ('==' | '!=') expression				# eqExpression
 	| Number												# numberExpression
-	| functionCall indexes?									# functionCallExpression
-	| Identifier indexes?									# identifierExpression
-	| String indexes?										# stringExpression
-	| '(' expression ')' indexes?							# expressionExpression
+	| functionCall											# functionCallExpression
+	| Identifier											# identifierExpression
+	| String												# stringExpression
+	| '(' expression ')'									# expressionExpression
 	| Input '(' String? ')'									# inputExpression;
 
-indexes: ( '[' expression ']')+;
+
 
 Println: 'println';
 type: 'int' | 'string' | 'bool' | 'float';

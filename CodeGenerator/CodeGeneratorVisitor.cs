@@ -162,14 +162,7 @@ namespace AntlrCodeGenerator
                     codeBuilder.LoadInstructions(2, OpCodes.LdLoc, ctx.Identifier().GetText());
                 }
             }
-            if (ctx.indexes() != null)
-            {
-                foreach (var index in ctx.indexes().expression())
-                {
-                    var exp = this.Visit(index);
-
-                }
-            }
+           
 
             return (variable == null || variable?.ToString() == "NULL") ? Value.VOID : new Value(variable);
 
@@ -316,15 +309,7 @@ namespace AntlrCodeGenerator
         public override Value VisitFunctionCallExpression(FunctionCallExpressionContext ctx)
         {
             var val = Visit(ctx.functionCall());
-            if (ctx.indexes() != null)
-            {
-
-                foreach (var exp in ctx.indexes().expression())
-                {
-                    var value = Visit(exp);
-
-                }
-            }
+          
             return new Value(val, val.Type);
 
         }
@@ -463,13 +448,7 @@ namespace AntlrCodeGenerator
             var value = Visit(context.expression());
 
 
-            if (context.indexes() != null)
-            {
-                foreach (var exp in context.indexes().expression())
-                {
-                    value = Visit(exp);
-                }
-            }
+          
             currentScope.Assign(context.expression().GetChild(0).GetText(), new Value(context.expression().GetChild(2).GetText()));
             return Value.VOID;
 
