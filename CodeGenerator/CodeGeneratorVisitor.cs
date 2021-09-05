@@ -331,24 +331,7 @@ namespace AntlrCodeGenerator
             return new Value(val, val.Type);
 
         }
-        //get input arguements
-        public string GetFunctionArguments(IdentifierFunctionCallContext context)
-        {
-            string s = "";
-            if (context.exprList() != null)
-            {
-                for (int i = 0; i < context.exprList().expression().Length; i++)
-                {
-                    s += "int32 ";
-                    if (i < context.exprList().expression().Length - 1)
-
-                        s += ",";
-
-                }
-            }
-            return s;
-
-        }
+  
 
         //visit add expression
 
