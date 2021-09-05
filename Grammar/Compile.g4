@@ -27,7 +27,10 @@ assignment: Identifier '=' expression;
 
 functionCall:
 	Identifier '(' exprList? ')'					# identifierFunctionCall
-	| Println '(' typespecifier ',' expression? ')'	# printlnFunctionCall;
+	| Println '(' typespecifier ',' expression? ')'	# printlnFunctionCall
+	| Print '(' typespecifier ',' expression? ')'	# printFunctionCall;
+
+
 
 typespecifier: '%d' | '%s';
 
@@ -62,6 +65,7 @@ expression:
 
 
 Println: 'println';
+Print: 'print';
 type: 'int' | 'string' | 'bool' | 'float';
 
 Input: 'input';
