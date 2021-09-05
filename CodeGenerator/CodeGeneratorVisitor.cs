@@ -53,17 +53,17 @@ namespace AntlrCodeGenerator
             int labelCount = 0;
             var labelTo = MakeLabel(labelCount);
             labelCount++;
-             
+
             _ = Visit(context.block());
-           
+
             codeBuilder.LoadInstructions(2, main);
-               codeBuilder.EmitTryCatch(labelTo);
-              codeBuilder.EmitCatchIL(labelTo);
-           // codeBuilder.LoadInstructions(2, "ret \n}");
+            codeBuilder.EmitTryCatch(labelTo);
+            codeBuilder.EmitCatchIL(labelTo);
+            // codeBuilder.LoadInstructions(2, "ret \n}");
             codeBuilder.LoadInstructions(2, fn);
-         
+
             var code = header + codeBuilder.GetCode() + "\n}";
-          
+
             File.WriteAllText(@"out\test.il", code);
             return Value.VOID;
         }
@@ -488,11 +488,16 @@ namespace AntlrCodeGenerator
 
         }
 
-
         public override Value VisitNumberExpression(NumberExpressionContext ctx)
         {
 
+
+
             codeBuilder.LoadInstructions(2, OpCodes.LdInt4, ctx.Number().GetText());
+            if (ctx.Parent.GetChild(0).GetText() == "return")
+            {
+                codeBuilder.LoadInstructions(2, OpCodes.Ret);
+            }
             return new Value(ctx.Number().GetText());
 
         }
