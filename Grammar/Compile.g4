@@ -11,72 +11,64 @@ using System.Linq;
 
 parse: block EOF;
 
-block: ( statement | functionDecl)* ('return' expression ';')? ;
+block: ( statement | functionDecl)* ('return' expression ';')?;
 
+statement:
+	httpRequest ';'
+	| varDeclration ';'
+	| assignment ';'
+	| functionCall ';'
+	| forStatement
+	| ifStatement;
 
-statement: httpRequest ';' | varDeclration ';'| assignment ';' | functionCall ';' | forStatement | ifStatement;
-
-
-httpRequest: 'readFile' Identifier  #HttpCall ;
+httpRequest: 'readFile' Identifier # HttpCall;
 varDeclration: type Identifier;
-assignment:  Identifier indexes? '=' expression;
+assignment: Identifier indexes? '=' expression;
 
 functionCall:
-	 Identifier '(' exprList? ')'  	# identifierFunctionCall
+	Identifier '(' exprList? ')'					# identifierFunctionCall
 	| Println '(' typespecifier ',' expression? ')'	# printlnFunctionCall;
 
-typespecifier:'%d' |'%s';
+typespecifier: '%d' | '%s';
 
-functionDecl: 'func' Identifier  '(' idList? ')' '->' type  '{' block '}'  ;
+functionDecl:
+	'func' Identifier '(' idList? ')' '->' type '{' block '}';
 
 forStatement:
 	'for' Identifier '=' expression 'to' expression '{' block '}';
-ifStatement
- : ifStat elseIfStat* elseStat?
- ;
+ifStatement: ifStat elseIfStat* elseStat?;
 
-ifStat
- : If expression '{' block '}'
- ;
+ifStat: If expression '{' block '}';
 
-elseIfStat
- : Else If expression '{' block '}'
- ;
+elseIfStat: Else If expression '{' block '}';
 
-elseStat
- : Else '{' block '}'
- ;
-idList:  type Identifier  (  ',' type Identifier  )*   ;
+elseStat: Else '{' block '}';
+idList: type Identifier ( ',' type Identifier)*;
 
 exprList: expression ( ',' expression)*;
 
 expression:
-	 expression op = ('*' | '/' | '%') expression	#multExpression
-	| expression op = ('+' | '-') expression		#addExpression
-	| expression op=( '>=' | '<=' | '>' | '<' ) expression #compExpression
- 	|expression op=( '==' | '!=' ) expression       #eqExpression
-	| Number										#numberExpression
-	| functionCall indexes?							#functionCallExpression
-	| Identifier indexes?							#identifierExpression
-	| String indexes?								#stringExpression
-	| '(' expression ')' indexes?					#expressionExpression
-	| Input '(' String? ')'							#inputExpression;
+	expression op = ('*' | '/' | '%') expression			# multExpression
+	| expression op = ('+' | '-') expression				# addExpression
+	| expression op = ('>=' | '<=' | '>' | '<') expression	# compExpression
+	| expression op = ('==' | '!=') expression				# eqExpression
+	| Number												# numberExpression
+	| functionCall indexes?									# functionCallExpression
+	| Identifier indexes?									# identifierExpression
+	| String indexes?										# stringExpression
+	| '(' expression ')' indexes?							# expressionExpression
+	| Input '(' String? ')'									# inputExpression;
 
 indexes: ( '[' expression ']')+;
 
 Println: 'println';
-type:
-    'int'
-    | 'string'
-    | 'bool'
-    | 'float'
-    ;
+type: 'int' | 'string' | 'bool' | 'float';
 
 Input: 'input';
 Add: '+';
 Subtract: '-';
-If:'if';
-Else:'else';
+If: 'if';
+Else: 'else';
 
 Bool: 'true' | 'false';
 
