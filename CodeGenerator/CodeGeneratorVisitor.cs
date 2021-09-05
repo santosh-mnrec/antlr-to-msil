@@ -35,6 +35,7 @@ namespace AntlrCodeGenerator
             codeBuilder.LoadInstructions(0, " .method private hidebysig static void  Main(string[] args) cil managed {");
             codeBuilder.LoadInstructions(2, " .entrypoint");
             codeBuilder.LoadInstructions(2, " .maxstack  8");
+            codeBuilder.LoadInstructions(2, " .locals  init (class [System.Net.Http]System.Net.Http.HttpClient client)");
             codeBuilder.LoadInstructions(2, " .locals init (class [mscorlib]System.Exception e)");
             codeBuilder.LoadInstructions(2, " .try");
             codeBuilder.LoadInstructions(2, " {");
@@ -50,7 +51,7 @@ namespace AntlrCodeGenerator
 
         public override Value VisitParse([NotNull] ParseContext context)
         {
-           
+
             var labelTo = MakeLabel(_labelCount);
             _labelCount++;
 
@@ -214,7 +215,13 @@ namespace AntlrCodeGenerator
 
         }
 
+        public override Value VisitHttpCall([NotNull] HttpCallContext context)
+        {
 
+            codeBuilder.EmitHttpClientStart(context.Identifier().GetText());
+            codeBuilder.EmitHttpClientEnd(context.Identifier().GetText());
+            return Value.VOID;
+        }
         public override Value VisitIdentifierFunctionCall(IdentifierFunctionCallContext ctx)
         {
             Function currentFn;

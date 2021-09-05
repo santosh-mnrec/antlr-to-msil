@@ -12,7 +12,7 @@ namespace AntlrCodeGenerator
         public void EmitTryCatch(string labelTo)
         {
 
-          
+
             AppendCodeLine(2, "nop");
             AppendCodeLine(2, " leave.s " + labelTo);
             AppendCodeLine(2, "}");
@@ -23,9 +23,9 @@ namespace AntlrCodeGenerator
         {
 
 
-           
+
             AppendCodeLine(2, "catch [mscorlib]System.Exception");
-             AppendCodeLine(2, "{");
+            AppendCodeLine(2, "{");
             AppendCodeLine(2, "stloc.0");
             AppendCodeLine(2, $" nop");
             AppendCodeLine(2, "ldloc.0");
@@ -126,7 +126,43 @@ namespace AntlrCodeGenerator
             return s + ")";
         }
 
+        //data type mapping to IL
+        public string GetILType(string type)
+        {
+            switch (type)
+            {
+                case "int":
+                    return "int32";
+                case "string":
+                    return "string";
+                case "bool":
+                    return "bool";
+                case "double":
+                    return "double";
+                case "float":
+                    return "float";
 
+            }
 
+            return "";
+        }
+
+        public void EmitHttpClientStart(string identifier)
+        {
+            AppendCodeLine(2, "nop");
+            AppendCodeLine(2, $"ldloc {identifier}");
+
+        }
+
+        public void EmitHttpClientEnd(string identifier)
+        {
+            AppendCodeLine(2, "call string [System.IO.FileSystem]System.IO.File::ReadAllText(string)");
+            AppendCodeLine(2, $"stloc {identifier}");
+            AppendCodeLine(2, $"ldloc {identifier}");
+            AppendCodeLine(2, "call void[System.Console] System.Console::WriteLine(string)");
+            AppendCodeLine(2, "nop");
+        }
     }
 }
+
+

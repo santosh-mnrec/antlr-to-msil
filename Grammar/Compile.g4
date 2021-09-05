@@ -13,9 +13,11 @@ parse: block EOF;
 
 block: ( statement | functionDecl)* ('return' expression ';')? ;
 
-statement: varDeclration ';'| assignment ';' | functionCall ';' | forStatement | ifStatement;
+
+statement: httpRequest ';' | varDeclration ';'| assignment ';' | functionCall ';' | forStatement | ifStatement;
 
 
+httpRequest: 'request' Identifier  #HttpCall ;
 varDeclration: type Identifier;
 assignment:  Identifier indexes? '=' expression;
 
