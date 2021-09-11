@@ -35,7 +35,7 @@ functionCall:
 typespecifier: '%d' | '%s';
 
 functionDecl:
-	'func' Identifier '(' idList? ')' '->' type '{' block '}';
+	'raja' Identifier '(' idList? ')' '->' type '{' block '}';
 
 forStatement:
 	'for' Identifier '=' expression 'to' expression '{' block '}';

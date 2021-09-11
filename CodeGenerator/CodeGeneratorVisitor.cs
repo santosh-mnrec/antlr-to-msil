@@ -105,6 +105,14 @@ namespace AntlrCodeGenerator
             if (context.expression() != null)
             {
                 var returnValue = Visit(context.expression());
+                if(returnValue!=Value.VOID){
+
+                    //if integer
+                    //load
+                  //  codeBuilder.LoadInstructions(2, "ldloc.0");
+                    codeBuilder.LoadInstructions(2,OpCodes.Ret);
+                
+                }
 
                 return returnValue;
 

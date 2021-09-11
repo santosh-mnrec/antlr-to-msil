@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using Antlr4.StringTemplate;
-using Antlr4.StringTemplate.Compiler;
-using Antlr4.StringTemplate.Misc;
 using Antlr4.Runtime;
 using AntlrCodeGenerator.CodeGenerator;
-using Antlr4.Runtime.Tree;
 using Antlr4.Runtime.Misc;
 
 namespace AntlrCodeGenerator
