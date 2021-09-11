@@ -194,7 +194,7 @@ namespace AntlrCodeGenerator
                 currentScope.FunctionArguments.Add(@params[i].GetText(), new Value(currentFunctionCall.Arguments[i].value, currentFunctionCall.Arguments[i].Type));
 
             }
-            
+
             currentScope.ArgCount = @params.Length;
             codeBuilder.BuildMethod(currentFunctionCall.Arguments.Select(x => x.Type).ToArray(),
             currentScope.FunctionArguments.Select(x => x.Key).ToArray(), context.Identifier().GetText(), currentScope.ReturnType);
@@ -243,7 +243,6 @@ namespace AntlrCodeGenerator
             if (ctx.exprList() != null && !isRecursive)
             {
 
-
                 foreach (var vdx in ctx?.exprList()?.expression())
                 {
 
@@ -285,20 +284,26 @@ namespace AntlrCodeGenerator
             }
             else
             {
-                //visit all the arguments
-
-                foreach (var vdx in ctx?.exprList()?.expression())
-                {
-                    var z = Visit(vdx);
-                }
-                var parameterList = string.Join(",", currentFn?.Arguments.Select(x => x.Type).ToArray());
-                codeBuilder.LoadInstructions(2, $"call {currentFn?.Arguments[0].Type} Program::{ctx.Identifier().GetText()}({parameterList})");
+                HandleRecursion(ctx, currentFn);
             }
             fns.Add(currentFn);
 
             return value;
 
         }
+
+        private void HandleRecursion(IdentifierFunctionCallContext ctx, Function currentFn)
+        {
+            //visit all the arguments
+
+            foreach (var vdx in ctx?.exprList()?.expression())
+            {
+                var z = Visit(vdx);
+            }
+            var parameterList = string.Join(",", currentFn?.Arguments.Select(x => x.Type).ToArray());
+            codeBuilder.LoadInstructions(2, $"call {currentFn?.Arguments[0].Type} Program::{ctx.Identifier().GetText()}({parameterList})");
+        }
+
         public override Value VisitFunctionCallExpression(FunctionCallExpressionContext ctx)
         {
             var val = Visit(ctx.functionCall());
