@@ -9,6 +9,24 @@ namespace AntlrCodeGenerator
 
         public void Append(string code) => _result.Append(code);
 
+        public void Init()
+        {
+            LoadInstructions(0, ".assembly extern mscorlib\n{\n}\n");
+            LoadInstructions(0, ".assembly " + "Program" + "\n{\n}\n\n.module " + "test" + ".exe\n");
+            LoadInstructions(0, ".class private auto ansi beforefieldinit Program extends [System.Runtime]System.Object ");
+            LoadInstructions(0, "{\n");
+            LoadInstructions(0, " .method private hidebysig static void  Main(string[] args) cil managed {");
+            LoadInstructions(2, " .entrypoint");
+            LoadInstructions(2, " .maxstack  8");
+            LoadInstructions(2, " .locals  init (class [System.Net.Http]System.Net.Http.HttpClient client)");
+            LoadInstructions(2, " .locals init (class [mscorlib]System.Exception e)");
+            LoadInstructions(2, " .try");
+            LoadInstructions(2, " {");
+
+
+
+        }
+
         public void EmitTryCatch(string labelTo)
         {
 

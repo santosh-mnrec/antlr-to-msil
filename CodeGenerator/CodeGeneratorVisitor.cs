@@ -28,20 +28,7 @@ namespace AntlrCodeGenerator
 
         public CodeGeneratorVisitor()
         {
-            codeBuilder.LoadInstructions(0, ".assembly extern mscorlib\n{\n}\n");
-            codeBuilder.LoadInstructions(0, ".assembly " + "Program" + "\n{\n}\n\n.module " + "test" + ".exe\n");
-            codeBuilder.LoadInstructions(0, ".class private auto ansi beforefieldinit Program extends [System.Runtime]System.Object ");
-            codeBuilder.LoadInstructions(0, "{\n");
-            codeBuilder.LoadInstructions(0, " .method private hidebysig static void  Main(string[] args) cil managed {");
-            codeBuilder.LoadInstructions(2, " .entrypoint");
-            codeBuilder.LoadInstructions(2, " .maxstack  8");
-            codeBuilder.LoadInstructions(2, " .locals  init (class [System.Net.Http]System.Net.Http.HttpClient client)");
-            codeBuilder.LoadInstructions(2, " .locals init (class [mscorlib]System.Exception e)");
-            codeBuilder.LoadInstructions(2, " .try");
-            codeBuilder.LoadInstructions(2, " {");
-
-
-
+            codeBuilder.Init();
 
 
             header = codeBuilder.GetCode();
@@ -60,7 +47,7 @@ namespace AntlrCodeGenerator
             codeBuilder.LoadInstructions(2, main);
             codeBuilder.EmitTryCatch(labelTo);
             codeBuilder.EmitCatchIL(labelTo);
-            // codeBuilder.LoadInstructions(2, "ret \n}");
+          
             codeBuilder.LoadInstructions(2, fn);
 
             var code = header + codeBuilder.GetCode() + "\n}";
@@ -108,8 +95,6 @@ namespace AntlrCodeGenerator
                 if (returnValue != Value.VOID)
                 {
 
-
-                    //  codeBuilder.LoadInstructions(2, "ldloc.0");
                     codeBuilder.LoadInstructions(2, OpCodes.Ret);
 
                 }
