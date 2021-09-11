@@ -9,7 +9,7 @@ namespace AntlrCodeGenerator
         public static readonly Value VOID = new Value();
 
 
-        private readonly object value;
+        public  object value;
         public string Type { get; set; }
 
         public Value()

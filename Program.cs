@@ -13,7 +13,7 @@ namespace AntlrCodeGenerator
             try
             {
 
-                var text = File.ReadAllText(@"out\input.txt");
+                var text = File.ReadAllText(@"out\input.rs");
                 var input = new AntlrInputStream(text);
                 Lexer lexer = new CompileLexer(input);
                 CommonTokenStream tokens = new CommonTokenStream(lexer);

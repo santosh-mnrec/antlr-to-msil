@@ -105,13 +105,13 @@ namespace AntlrCodeGenerator
             if (context.expression() != null)
             {
                 var returnValue = Visit(context.expression());
-                if(returnValue!=Value.VOID){
+                if (returnValue != Value.VOID)
+                {
 
-                    //if integer
-                    //load
-                  //  codeBuilder.LoadInstructions(2, "ldloc.0");
-                    codeBuilder.LoadInstructions(2,OpCodes.Ret);
-                
+
+                    //  codeBuilder.LoadInstructions(2, "ldloc.0");
+                    codeBuilder.LoadInstructions(2, OpCodes.Ret);
+
                 }
 
                 return returnValue;
@@ -153,7 +153,7 @@ namespace AntlrCodeGenerator
             if (variable != null)
             {
 
-                if (variable != null && currentScope.FunctionArguments.Contains(identifier))
+                if (variable != null && currentScope.FunctionArguments.ContainsKey(identifier))
                 {
                     if (!currentScope.Variables.ContainsKey(identifier) && variable.Type == "int32")
                     {
@@ -170,7 +170,7 @@ namespace AntlrCodeGenerator
                     codeBuilder.LoadInstructions(2, OpCodes.LdLoc, ctx.Identifier().GetText());
                 }
             }
-           
+
 
             return (variable == null || variable?.ToString() == "NULL") ? Value.VOID : new Value(variable);
 
@@ -185,26 +185,27 @@ namespace AntlrCodeGenerator
             var functionScope = new Scope(currentScope, "function");
             currentScope = functionScope;
             currentScope.ReturnType = context.GetChild(6).GetText();
-            var currentFunctionCall = fns.FirstOrDefault(fn => fn.FnName == context.Identifier().GetText());
+            var currentFunctionCall = fns.FirstOrDefault(fn => fn.Name == context.Identifier().GetText());
             var @params = context.idList() != null ? context.idList().Identifier() : new List<ITerminalNode>().ToArray();
 
             for (int i = 0; i < @params.Length; ++i)
             {
-                currentScope.assignParam(@params[i].GetText(), new Value(currentFunctionCall.Arguments[i].Value, currentFunctionCall.Arguments[i].Type));
-                currentScope.FunctionArguments.Add(@params[i].GetText());
+                currentScope.assignParam(@params[i].GetText(), new Value(currentFunctionCall.Arguments[i].value, currentFunctionCall.Arguments[i].Type));
+                currentScope.FunctionArguments.Add(@params[i].GetText(), new Value(currentFunctionCall.Arguments[i].value, currentFunctionCall.Arguments[i].Type));
 
             }
+            
             currentScope.ArgCount = @params.Length;
             codeBuilder.BuildMethod(currentFunctionCall.Arguments.Select(x => x.Type).ToArray(),
-            currentScope.FunctionArguments.Select(x => x).ToArray(), context.Identifier().GetText(), currentScope.ReturnType);
+            currentScope.FunctionArguments.Select(x => x.Key).ToArray(), context.Identifier().GetText(), currentScope.ReturnType);
             codeBuilder.LoadInstructions(2, codeBuilder.EmitLocals(currentFunctionCall.Arguments.Select(x => x.Type).ToArray()
-             , currentScope.FunctionArguments.Select(x => x).ToArray())); ;
+             , currentScope.FunctionArguments.Select(x => x.Key).ToArray())); ;
 
             Visit(context.block());
             codeBuilder.LoadInstructions(2, "ret");
             codeBuilder.LoadInstructions(2, "}");
             fn += codeBuilder.GetCode();
-
+            fns.Remove(currentFunctionCall);
             currentScope = functionScope.Parent;
             functionScope = null;
 
@@ -225,63 +226,48 @@ namespace AntlrCodeGenerator
             Function currentFn;
             Value value = Value.VOID;
 
-            var isRecursive = fns.Any(x => x.FnName == ctx.Identifier().GetText());
+            var isRecursive = fns.Any(x => x.Name == ctx.Identifier().GetText());
             if (isRecursive)
             {
-                currentFn = fns.FirstOrDefault(fn => fn.FnName == ctx.Identifier().GetText());
+                currentFn = fns.FirstOrDefault(fn => fn.Name == ctx.Identifier().GetText());
             }
 
             else
             {
 
                 currentFn = new Function();
-                currentFn.FnName = ctx.Identifier().GetText();
+                currentFn.Name = ctx.Identifier().GetText();
 
             }
 
             if (ctx.exprList() != null && !isRecursive)
             {
-                //fill the function call
+
 
                 foreach (var vdx in ctx?.exprList()?.expression())
                 {
 
-                    var z = Visit(vdx);
-                    var symbol = new Symbol();
-                    var functionParameter = vdx.GetText();
-                    if (vdx is IdentifierExpressionContext context)
+                    var functionArgument = Visit(vdx);
+                    var argumentValue = vdx.GetText();
+                    if (currentScope.Resolve(argumentValue) != null)
                     {
-                        var varName = context.Identifier().GetText().Length > 1 ? context.Identifier().GetText().Substring(1) : context.Identifier().GetText();
-                        var variable = currentScope.Resolve(functionParameter);
-                        if (currentScope.Resolve(varName) != null)
-                        {
-                            symbol.Type = currentScope.Resolve(varName).IsNumber() ? "int32" : "string";
-                            currentFn.ReturnType = symbol.Type;
-                            currentFn.Arguments.Add(symbol);
-                        }
+
+                        var variable = currentScope.Resolve(argumentValue);
+
+
                     }
                     else
                     {
-                        functionParameter = functionParameter.Length > 1 ? functionParameter.Split("-")[0] : functionParameter;
-                        if (currentScope.Resolve(functionParameter) != null)
-                        {
-                            symbol.Type = currentScope.Resolve(functionParameter).IsNumber() ? "int32" : "string";
-                            var variable = currentScope.Resolve(functionParameter);
-                            currentScope.Assign(functionParameter, new Value(variable, symbol.Type));
-                            value = new Value(functionParameter, symbol.Type);
 
-                        }
-                        else
-                        {
-                            symbol.Type = new Value(functionParameter).IsNumber() ? "int32" : "string";
-                        }
-
-                        symbol.Value = functionParameter;
-                        value = new Value(functionParameter, symbol.Type);
-                        currentFn.Arguments.Add(symbol);
+                        functionArgument.Type = new Value(argumentValue).IsNumber() ? "int32" : "string";
                     }
 
+                    functionArgument.value = argumentValue;
+
+                    currentFn.Arguments.Add(functionArgument);
                 }
+
+
                 var parameterList = string.Join(",", currentFn?.Arguments.Select(x => x.Type).ToArray());
 
                 if (ctx.exprList() != null)
@@ -308,7 +294,6 @@ namespace AntlrCodeGenerator
                 var parameterList = string.Join(",", currentFn?.Arguments.Select(x => x.Type).ToArray());
                 codeBuilder.LoadInstructions(2, $"call {currentFn?.Arguments[0].Type} Program::{ctx.Identifier().GetText()}({parameterList})");
             }
-
             fns.Add(currentFn);
 
             return value;
@@ -317,7 +302,7 @@ namespace AntlrCodeGenerator
         public override Value VisitFunctionCallExpression(FunctionCallExpressionContext ctx)
         {
             var val = Visit(ctx.functionCall());
-          
+
             return new Value(val, val.Type);
 
         }
@@ -456,7 +441,7 @@ namespace AntlrCodeGenerator
             var value = Visit(context.expression());
 
 
-          
+
             currentScope.Assign(context.expression().GetChild(0).GetText(), new Value(context.expression().GetChild(2).GetText()));
             return Value.VOID;
 

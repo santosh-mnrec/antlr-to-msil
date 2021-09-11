@@ -7,12 +7,12 @@ namespace AntlrCodeGenerator
     public class Scope
     {
 
-        public Scope Parent {get;set;}
+        public Scope Parent { get; set; }
         public Dictionary<string, Value> Variables { get; set; }
-        public List<string> FunctionArguments { get; set; }=new     List<string>();
+        public Dictionary<string, Value> FunctionArguments { get; set; } = new Dictionary<string, Value>();
         public int ArgCount { get; set; }
         public string ScopeName { get; set; }
-        //return type of function
+       
         public string ReturnType { get; set; }
 
         public bool IsScope(string name)
@@ -25,8 +25,20 @@ namespace AntlrCodeGenerator
 
         public void assignParam(string var, Value value)
         {
-            Variables.TryAdd(var, value);
+            if (Variables.TryGetValue(var, out Value v))
+            {
+                var oldValue = Variables[var];
+                //update the value of the variable
+                Variables[var].value = value.value;
+            }
+            else
+            {
+
+                Variables.TryAdd(var, value);
+            }
+
         }
+
         public Scope(Scope p, string scopeName)
         {
             Parent = p;
@@ -75,7 +87,7 @@ namespace AntlrCodeGenerator
             return Parent == null;
         }
 
-      
+
 
         private void ReAssign(string identifier, Value value)
         {
@@ -120,7 +132,7 @@ namespace AntlrCodeGenerator
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            foreach(var item in Variables)
+            foreach (var item in Variables)
             {
                 sb.Append(item.Key).Append("->").Append(item.Value).Append(",");
             }

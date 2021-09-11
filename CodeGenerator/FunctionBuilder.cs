@@ -7,11 +7,9 @@ namespace AntlrCodeGenerator.CodeGenerator
     public class Function
     {
 
-        public string FnName {get;set;}
+        public string Name { get; set; }
 
-        public List<string> LocalVariables {get;set;}=new List<string>();
-        public List<Symbol> Arguments {get;set;}=new List<Symbol>();
-        //return type
-        public string ReturnType {get;set;}
+        public List<Value> Arguments { get; set; } = new List<Value>();
+
     }
 }
