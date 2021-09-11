@@ -47,7 +47,7 @@ namespace AntlrCodeGenerator
             codeBuilder.LoadInstructions(2, main);
             codeBuilder.EmitTryCatch(labelTo);
             codeBuilder.EmitCatchIL(labelTo);
-          
+
             codeBuilder.LoadInstructions(2, fn);
 
             var code = header + codeBuilder.GetCode() + "\n}";
@@ -471,7 +471,7 @@ namespace AntlrCodeGenerator
 
             var type = currentScope.Resolve(varName);
 
-            var dateType = type.IsNumber() ? "int32" : "string";
+            var dateType = type.Type ?? "int32";
 
             //emitlocal
             codeBuilder.LoadInstructions(2, codeBuilder.EmitLocals(context.Identifier().GetText(), dateType));
