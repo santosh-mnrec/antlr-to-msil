@@ -9,7 +9,7 @@ namespace AntlrCodeGenerator
 
         public Scope Parent { get; set; }
         public Dictionary<string, Value> Variables { get; set; }
-        public Dictionary<string, Value> FunctionArguments { get; set; } = new Dictionary<string, Value>();
+        public Dictionary<string, Value> LocalVariables { get; set; } = new Dictionary<string, Value>();
         public int ArgCount { get; set; }
         public string ScopeName { get; set; }
        

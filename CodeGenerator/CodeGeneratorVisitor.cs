@@ -153,7 +153,7 @@ namespace AntlrCodeGenerator
             if (variable != null)
             {
 
-                if (variable != null && currentScope.FunctionArguments.ContainsKey(identifier))
+                if (variable != null && currentScope.LocalVariables.ContainsKey(identifier))
                 {
                     if (!currentScope.Variables.ContainsKey(identifier) && variable.Type == "int32")
                     {
@@ -191,15 +191,15 @@ namespace AntlrCodeGenerator
             for (int i = 0; i < @params.Length; ++i)
             {
                 currentScope.assignParam(@params[i].GetText(), new Value(currentFunctionCall.Arguments[i].value, currentFunctionCall.Arguments[i].Type));
-                currentScope.FunctionArguments.Add(@params[i].GetText(), new Value(currentFunctionCall.Arguments[i].value, currentFunctionCall.Arguments[i].Type));
+                currentScope.LocalVariables.Add(@params[i].GetText(), new Value(currentFunctionCall.Arguments[i].value, currentFunctionCall.Arguments[i].Type));
 
             }
 
             currentScope.ArgCount = @params.Length;
             codeBuilder.BuildMethod(currentFunctionCall.Arguments.Select(x => x.Type).ToArray(),
-            currentScope.FunctionArguments.Select(x => x.Key).ToArray(), context.Identifier().GetText(), currentScope.ReturnType);
+            currentScope.LocalVariables.Select(x => x.Key).ToArray(), context.Identifier().GetText(), currentScope.ReturnType);
             codeBuilder.LoadInstructions(2, codeBuilder.EmitLocals(currentFunctionCall.Arguments.Select(x => x.Type).ToArray()
-             , currentScope.FunctionArguments.Select(x => x.Key).ToArray())); ;
+             , currentScope.LocalVariables.Select(x => x.Key).ToArray())); ;
 
             Visit(context.block());
             codeBuilder.LoadInstructions(2, "ret");
