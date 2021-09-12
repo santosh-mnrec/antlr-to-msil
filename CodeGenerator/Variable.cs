@@ -25,7 +25,7 @@ namespace AntlrCodeGenerator
             // only accept bool, list, number or string types
             if (!(Isbool() || IsNumber() || IsString() || IsNull()))
             {
-                Exception exception = new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
+                var exception = new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
                 throw exception;
             }
         }
@@ -36,7 +36,7 @@ namespace AntlrCodeGenerator
             // only accept bool, list, number or string types
             if (!(Isbool() || IsNumber() || IsString() || IsNull()))
             {
-                Exception exception = new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
+                var exception = new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
                 throw exception;
             }
         }
