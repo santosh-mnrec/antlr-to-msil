@@ -12,14 +12,7 @@ namespace AntlrCodeGenerator.CodeGenerator
             else
                 dict.Add(key, value);
         }
-        public static void AddOrUpdate(this List<Symbol> list, Symbol symbol)
-        {
-            if (list.Contains(symbol))
-                list[list.IndexOf(symbol)] = symbol;
-            else
-                list.Add(symbol);
-
-        }
+    
         public static string ToInt32(this string str)
         {
             if (str!=null && str.StartsWith("int"))
