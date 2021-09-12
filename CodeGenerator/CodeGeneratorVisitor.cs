@@ -26,7 +26,7 @@ namespace AntlrCodeGenerator
 
         private List<Function> _fns = new List<Function>();
 
-        public CodeGeneratorVisitor()
+        public CodeGeneratorVisitor( )
         {
             _codeBuilder.Init();
 
@@ -71,6 +71,10 @@ namespace AntlrCodeGenerator
             {
                 _codeBuilder.EmitInBuiltFunctionCall("string");
 
+            }
+            else if (context.GetChild(2).GetText().Contains("%f"))
+            {
+                _codeBuilder.EmitInBuiltFunctionCall("float64");
             }
 
             return Value.VOID;
@@ -133,13 +137,21 @@ namespace AntlrCodeGenerator
             var variable = _currentScope.Resolve(identifier);
             if (variable != null)
             {
+                var type = variable.GetDataType();
                 if (_currentScope.LocalVariables.ContainsKey(identifier))
                 {
-                    switch (_currentScope.Variables.ContainsKey(identifier))
+                    switch (type)
                     {
-                        case false when variable.Type == "int32":
+                        case "int32":
                             _codeBuilder.LoadInstructions(2, OpCodes.LdInt4, variable.ToString());
                             break;
+                        case "string":
+                            _codeBuilder.LoadInstructions(2, OpCodes.LdStr, variable.ToString());
+                            break;
+                        case "float32":
+                            _codeBuilder.LoadInstructions(2, OpCodes.LdFloat, variable.ToString());
+                            break;
+
                         default:
                             _codeBuilder.LoadInstructions(2, OpCodes.LdArg, ctx.Identifier().GetText());
                             break;
@@ -216,7 +228,7 @@ namespace AntlrCodeGenerator
             else
             {
 
-                currentFn = new Function {Name = ctx.Identifier().GetText()};
+                currentFn = new Function { Name = ctx.Identifier().GetText() };
 
             }
 
@@ -230,15 +242,16 @@ namespace AntlrCodeGenerator
                     var argumentValue = vdx.GetText();
                     if (_currentScope.Resolve(argumentValue) != null)
                     {
-                        _currentScope.Resolve(argumentValue);
+                        var resolveValue = _currentScope.Resolve(argumentValue);
+                        functionArgument.Type = resolveValue.Type == null ? resolveValue.GetDataType() : resolveValue.Type;
+                        functionArgument.value = _currentScope.Resolve(argumentValue).value;
                     }
                     else
                     {
 
-                        functionArgument.Type = new Value(argumentValue).IsNumber() ? "int32" : "string";
+                        functionArgument.Type = new Value(argumentValue).GetDataType();
                     }
 
-                    functionArgument.value = argumentValue;
 
                     currentFn.Arguments.Add(functionArgument);
                 }
@@ -307,6 +320,21 @@ namespace AntlrCodeGenerator
                 case CompileParser.Add:
                     var left = this.Visit(context.expression(0));
                     var right = this.Visit(context.expression(1));
+
+                    //if both are ints
+                    if (left.ToFloat() && right.ToFloat())
+                    {
+
+                        _codeBuilder.LoadInstructions(2, OpCodes.Add);
+
+                        if (left.Type == "float32" && right.Type == "float32")
+                        {
+                            return new Value(left);
+                        }
+                        return new Value(left.IsFloat() + right.IsFloat());
+
+                    }
+
                     //if both are ints
                     if (left.IsNumber() && right.IsNumber())
                     {
@@ -317,14 +345,16 @@ namespace AntlrCodeGenerator
                         {
                             return new Value(left);
                         }
-                        return new Value(left.AsInt() + right.AsInt());
+                        return new Value(left.ToInteger() + right.ToInteger());
 
                     }
 
                     if ((left.IsString() || right.IsString()) || (right.IsNumber() || left.IsNumber()))
                     {
+
                         if (left.Type == "int32" || right.Type == "int32")
                         {
+
 
                             _codeBuilder.LoadInstructions(2, OpCodes.Add);
 
@@ -333,9 +363,9 @@ namespace AntlrCodeGenerator
                         }
                         else
                         {
-
+                            _codeBuilder.LoadInstructions(2, "call instance  string [mscorlib]System.Int32::ToString()");
                             _codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
-                            return new Value(left.AsString() + right.AsString());
+                            return new Value(left.ToStr() + right.ToStr());
                         }
 
 
@@ -344,7 +374,7 @@ namespace AntlrCodeGenerator
                     {
                         _codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
 
-                        return new Value(left.AsString() + right.AsString());
+                        return new Value(left.ToStr() + right.ToStr());
 
                     }
 
@@ -359,7 +389,7 @@ namespace AntlrCodeGenerator
                         _codeBuilder.LoadInstructions(2, OpCodes.Sub);
 
 
-                        return new Value(l.AsInt() + r.AsInt());
+                        return new Value(l.ToInteger() + r.ToInteger());
 
                     }
                     break;
@@ -387,7 +417,7 @@ namespace AntlrCodeGenerator
 
                         _codeBuilder.LoadInstructions(2, OpCodes.Mul);
                         if (left.IsNumber() && right.IsNumber())
-                            return new Value(left.AsInt() * right.AsInt());
+                            return new Value(left.ToInteger() * right.ToInteger());
                         else
                             return new Value(left);
 
@@ -405,7 +435,7 @@ namespace AntlrCodeGenerator
                     {
 
                         _codeBuilder.LoadInstructions(2, OpCodes.Rem);
-                        return new Value(l.AsInt() + r.AsInt());
+                        return new Value(l.ToInteger() + r.ToInteger());
 
                     }
 
@@ -434,12 +464,22 @@ namespace AntlrCodeGenerator
 
 
 
-            _codeBuilder.LoadInstructions(2, OpCodes.LdInt4, ctx.Number().GetText());
+
+            //type is float
+            if (ctx.GetChild(0).GetText().Contains("."))
+            {
+                _codeBuilder.LoadInstructions(2, "ldc.r4 ", ctx.GetChild(0).GetText());
+            }
+            else
+            {
+
+                _codeBuilder.LoadInstructions(2, OpCodes.LdInt4, ctx.Number().GetText());
+            }
             if (ctx.Parent.GetChild(0).GetText() == "return")
             {
                 _codeBuilder.LoadInstructions(2, OpCodes.Ret);
             }
-            return new Value(ctx.Number().GetText());
+            return new Value(ctx.Number().GetText(), ctx.GetChild(0).GetText());
 
         }
 
@@ -555,7 +595,7 @@ namespace AntlrCodeGenerator
                 var l = Visit(context.expression(0));
                 var r = Visit(context.expression(1));
                 _codeBuilder.LoadInstructions(2, OpCodes.Ceq);
-                return new Value(l.AsInt() == r.AsInt());
+                return new Value(l.ToInteger() == r.ToInteger());
             }
             if (context.op.Text == "!=")
             {

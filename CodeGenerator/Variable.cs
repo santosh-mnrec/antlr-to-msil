@@ -56,22 +56,22 @@ namespace AntlrCodeGenerator
             return result;
         }
 
-        public int AsDouble()
+        public bool ToFloat()
+        {
+          return float.TryParse(value.ToString(), out float result);
+        }
+        public float IsFloat(){
+            return float.Parse(value.ToString());
+            
+        }
+        public int ToInteger()
         {
             return int.Parse(value.ToString());
         }
 
-        public int AsInt()
-        {
-            return int.Parse(value.ToString());
-        }
 
 
-
-        public string AsString()
-        {
-            return value.ToString();
-        }
+        public string ToStr() => value.ToString();
 
 
 
@@ -90,12 +90,12 @@ namespace AntlrCodeGenerator
                 }
                 else
                 {
-                    return AsDouble().CompareTo(that.AsDouble());
+                    return ToFloat().CompareTo(that.ToFloat());
                 }
             }
             else if (IsString() && that.IsString())
             {
-                return AsString().CompareTo(that.AsString());
+                return ToStr().CompareTo(that.ToStr());
             }
             else
             {
@@ -122,7 +122,7 @@ namespace AntlrCodeGenerator
             var that = (Value)o;
             if (IsNumber() && that.IsNumber())
             {
-                var result = AsDouble() == that.AsDouble();
+                var result = ToFloat() == that.ToFloat();
                 return result;
 
             }

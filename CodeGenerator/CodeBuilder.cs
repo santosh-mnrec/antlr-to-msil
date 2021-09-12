@@ -102,6 +102,9 @@ namespace AntlrCodeGenerator
             {
                 returnType = "int32";
             }
+            if(returnType == "float"){
+                returnType = "float32";
+            }
             s += $".method private hidebysig static {returnType}  {methodName}(";
             for (int i = 0; i < types.Length; ++i)
             {
@@ -138,6 +141,12 @@ namespace AntlrCodeGenerator
 
         public string EmitLocals(string parameter, string type)
         {
+            if(type == "int"){
+                type = "int32";
+            }
+            if(type == "float"){
+                type = "float32";
+            }
             string s = ".locals init ( ";
 
             s += type + " " + parameter;
@@ -147,25 +156,9 @@ namespace AntlrCodeGenerator
             return s + ")";
         }
 
-        //data type mapping to IL
-        public string GetILType(string type)
+        internal void LoadInstructions(int v1, object ldStr, string v2)
         {
-            switch (type)
-            {
-                case "int":
-                    return "int32";
-                case "string":
-                    return "string";
-                case "bool":
-                    return "bool";
-                case "double":
-                    return "double";
-                case "float":
-                    return "float";
-
-            }
-
-            return "";
+            throw new System.NotImplementedException();
         }
 
         public void EmitHttpClientStart(string identifier)

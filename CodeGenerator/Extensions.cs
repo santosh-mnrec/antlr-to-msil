@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace AntlrCodeGenerator.CodeGenerator
@@ -12,12 +13,26 @@ namespace AntlrCodeGenerator.CodeGenerator
             else
                 dict.Add(key, value);
         }
-    
+
         public static string ToInt32(this string str)
         {
-            if (str!=null && str.StartsWith("int"))
+            if (str != null && str.StartsWith("int"))
                 return "int32";
             return str;
+        }
+        public static string GetDataType(this Value value)
+        {
+            if(value.ToFloat())
+                return "float32";
+            if (value.IsNumber())
+                return "int32";
+            if (value.IsString())
+                return "string";
+            if(value.Asbool())
+                return "bool";
+            
+            return "null";
+
         }
 
 

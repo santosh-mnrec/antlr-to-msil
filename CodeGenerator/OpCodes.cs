@@ -23,6 +23,9 @@ namespace AntlrCodeGenerator.CodeGenerator
         public static string Cgt = "cgt";
         public static string Cgt_Un = "cgt";
         public static string Ret="ret";
+
+        public static string LdStr = "ldstr ";
+        public static string LdFloat= "ldc.r4 ";
     }
 
 }

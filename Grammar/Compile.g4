@@ -1,7 +1,7 @@
 grammar Compile;
 
 @members {}
-@header {
+@header { 
 
 using System.Collections.Generic;
 using System.Linq;
@@ -17,9 +17,9 @@ statement:
 	readFile ';'
 	| varDeclration ';'
 	| assignment ';'
-	| functionCall ';'
+	| functionCall ';'  
 	| forStatement
-	| ifStatement;
+	| ifStatement;   
 
 readFile: 'readFile' Identifier # HttpCall;
 varDeclration: type Identifier;
@@ -32,7 +32,7 @@ functionCall:
 
 
 
-typespecifier: '%d' | '%s';
+typespecifier: '%d' | '%s' |'%f';
 
 functionDecl:
 	'func' Identifier '(' idList? ')' '->' type '{' block '}';
