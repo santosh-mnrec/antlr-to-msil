@@ -14,14 +14,14 @@ parse: block EOF;
 block: ( statement | functionDecl)* ('return' expression ';')?;
 
 statement:
-	httpRequest ';'
+	readFile ';'
 	| varDeclration ';'
 	| assignment ';'
 	| functionCall ';'
 	| forStatement
 	| ifStatement;
 
-httpRequest: 'readFile' Identifier # HttpCall;
+readFile: 'readFile' Identifier # HttpCall;
 varDeclration: type Identifier;
 assignment: Identifier '=' expression;
 
@@ -35,7 +35,7 @@ functionCall:
 typespecifier: '%d' | '%s';
 
 functionDecl:
-	'raja' Identifier '(' idList? ')' '->' type '{' block '}';
+	'func' Identifier '(' idList? ')' '->' type '{' block '}';
 
 forStatement:
 	'for' Identifier '=' expression 'to' expression '{' block '}';
