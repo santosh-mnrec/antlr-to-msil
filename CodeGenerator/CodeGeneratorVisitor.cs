@@ -61,21 +61,6 @@ namespace AntlrCodeGenerator
 
 
             Visit(context.expression());
-            // if (context.GetChild(2).GetText().Contains("%d"))
-            // {
-            //     _codeBuilder.EmitInBuiltFunctionCall("int32");
-
-            // }
-            // else if (context.GetChild(2).GetText().Contains("%s"))
-            // {
-            //     _codeBuilder.EmitInBuiltFunctionCall("string");
-
-            // }
-            // else if (context.GetChild(2).GetText().Contains("%f"))
-            // {
-            //     _codeBuilder.EmitInBuiltFunctionCall("float64");
-            // }
-
             _codeBuilder.EmitInBuiltFunctionCall(_codeBuilder.DataTypes[context.GetChild(2).GetText()]);
             return Value.VOID;
         }
@@ -137,7 +122,7 @@ namespace AntlrCodeGenerator
             var variable = _currentScope.Resolve(identifier);
             if (variable != null)
             {
-                  var type = variable.GetDataType();
+                var type = variable.GetDataType();
                 if (_currentScope.LocalVariables.ContainsKey(identifier))
                 {
                     switch (type)
@@ -249,8 +234,8 @@ namespace AntlrCodeGenerator
                     else
                     {
 
-                       functionArgument.Type = new Value(argumentValue).GetDataType();
-                       
+                        functionArgument.Type = new Value(argumentValue).GetDataType();
+
                     }
 
 
@@ -328,11 +313,11 @@ namespace AntlrCodeGenerator
 
                         _codeBuilder.LoadInstructions(2, OpCodes.Add);
 
-                        if (left.Type == "float32" && right.Type == "float32")
+                        return left.Type switch
                         {
-                            return new Value(left);
-                        }
-                        return new Value(left.IsFloat() + right.IsFloat());
+                            "float32" when right.Type == "float32" => new Value(left),
+                            _ => new Value(left.IsFloat() + right.IsFloat())
+                        };
 
                     }
 
@@ -342,11 +327,11 @@ namespace AntlrCodeGenerator
 
                         _codeBuilder.LoadInstructions(2, OpCodes.Add);
 
-                        if (left.Type == "int32" && right.Type == "int32")
+                        return left.Type switch
                         {
-                            return new Value(left);
-                        }
-                        return new Value(left.ToInteger() + right.ToInteger());
+                            "int32" when right.Type == "int32" => new Value(left),
+                            _ => new Value(left.ToInteger() + right.ToInteger())
+                        };
 
                     }
 
@@ -413,7 +398,9 @@ namespace AntlrCodeGenerator
                     var left = this.Visit(context.expression(0));
                     var right = this.Visit(context.expression(1));
                     //if both are ints
-                    if ((left.IsNumber() || (left.Type == "int32") && (right.IsNumber() || right.Type == "int32")))
+                    if ((left.IsNumber()
+                         || (left.Type == "int32")
+                         && (right.IsNumber() || right.Type == "int32")))
                     {
 
                         _codeBuilder.LoadInstructions(2, OpCodes.Mul);

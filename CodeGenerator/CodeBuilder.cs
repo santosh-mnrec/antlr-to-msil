@@ -32,11 +32,11 @@ namespace AntlrCodeGenerator
 
         public void Init( )
         {
-            LoadInstructions(0, ".assembly extern mscorlib\n{\n}\n");
-            LoadInstructions(0, ".assembly " + "Program" + "\n{\n}\n\n.module " + "test" + ".exe\n");
-            LoadInstructions(0, ".class private auto ansi beforefieldinit Program extends [System.Runtime]System.Object ");
-            LoadInstructions(0, "{\n");
-            LoadInstructions(0, " .method private hidebysig static void  Main(string[] args) cil managed {");
+            LoadInstructions(1, ".assembly extern mscorlib\n{\n}\n");
+            LoadInstructions(1, ".assembly " + "Program" + "\n{\n}\n\n.module " + "test" + ".exe\n");
+            LoadInstructions(1, ".class private auto ansi beforefieldinit Program extends [System.Runtime]System.Object ");
+            LoadInstructions(1, "{\n");
+            LoadInstructions(1, " .method private hidebysig static void  Main(string[] args) cil managed {");
             LoadInstructions(2, " .entrypoint");
             LoadInstructions(2, " .maxstack  8");
             LoadInstructions(2, " .locals  init (class [System.Net.Http]System.Net.Http.HttpClient client)");
@@ -136,7 +136,7 @@ namespace AntlrCodeGenerator
             }
             s += ") cil managed";
 
-            AppendCodeLine(2, s + "{");
+            AppendCodeLine(3, s + "{");
         }
 
         public string EmitLocals(string[] types, params string[] parameters)
@@ -175,8 +175,8 @@ namespace AntlrCodeGenerator
 
         public void EmitHttpClientStart(string identifier)
         {
-            AppendCodeLine(2, "nop");
-            AppendCodeLine(2, $"ldloc {identifier}");
+            AppendCodeLine(1, "nop");
+            AppendCodeLine(1, $"ldloc {identifier}");
 
         }
 
