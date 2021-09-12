@@ -1,7 +1,7 @@
-using System.IO;
 using Antlr4.Runtime;
-using AntlrCodeGenerator.CodeGenerator;
 using Antlr4.Runtime.Misc;
+using AntlrCodeGenerator.CodeGenerator;
+using System.IO;
 
 namespace AntlrCodeGenerator
 {
@@ -36,7 +36,8 @@ namespace AntlrCodeGenerator
             }
 
         }
-        static void Main(string[] args)
+
+        private static void Main(string[] args)
         {
 
             Parse();

@@ -107,8 +107,9 @@ namespace AntlrCodeGenerator
             {
                 s += $"{types[i]} {parameters[i]}";
                 if (i < parameters.Length - 1)
-
+                {
                     s += ",";
+                }
             }
             s += ") cil managed";
 
@@ -126,7 +127,9 @@ namespace AntlrCodeGenerator
                 s += $"{type} {parameters[i]}";
 
                 if (i < parameters.Length - 1)
+                {
                     s += ",";
+                }
             }
 
             return s + ")";
