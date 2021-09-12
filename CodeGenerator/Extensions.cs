@@ -14,12 +14,6 @@ namespace AntlrCodeGenerator.CodeGenerator
                 dict.Add(key, value);
         }
 
-        public static string ToInt32(this string str)
-        {
-            if (str != null && str.StartsWith("int"))
-                return "int32";
-            return str;
-        }
         public static string GetDataType(this Value value)
         {
             if(value.ToFloat())

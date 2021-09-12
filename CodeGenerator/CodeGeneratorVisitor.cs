@@ -16,9 +16,9 @@ namespace AntlrCodeGenerator
 
         private readonly CodeBuilder _codeBuilder = new CodeBuilder();
 
-        private string _main = "";
-        private string _fn = "";
-        private string _header = "";
+        private string _mainMethod = "";
+        private string _methodBody = "";
+        private string _moduleDefnition = "";
         //visit for loop
         private int _labelCount = 0;
         private string _labelPrev = "";
@@ -31,7 +31,7 @@ namespace AntlrCodeGenerator
             _codeBuilder.Init();
 
 
-            _header = _codeBuilder.GetCode();
+            _moduleDefnition = _codeBuilder.GetCode();
 
         }
 
@@ -39,18 +39,18 @@ namespace AntlrCodeGenerator
         public override Value VisitParse([NotNull] ParseContext context)
         {
 
-            var labelTo = MakeLabel(_labelCount);
+            var labelTo = _codeBuilder.MakeLabel(_labelCount);
             _labelCount++;
 
             _ = Visit(context.block());
 
-            _codeBuilder.LoadInstructions(2, _main);
+            _codeBuilder.LoadInstructions(2, _mainMethod);
             _codeBuilder.EmitTryCatch(labelTo);
             _codeBuilder.EmitCatchIL(labelTo);
 
-            _codeBuilder.LoadInstructions(2, _fn);
+            _codeBuilder.LoadInstructions(2, _methodBody);
 
-            var code = _header + _codeBuilder.GetCode() + "\n}";
+            var code = _moduleDefnition + _codeBuilder.GetCode() + "\n}";
 
             File.WriteAllText(@"out\test.il", code);
             return Value.VOID;
@@ -61,22 +61,22 @@ namespace AntlrCodeGenerator
 
 
             Visit(context.expression());
-            System.Console.WriteLine($"Executed at {DateTime.UtcNow}");
-            if (context.GetChild(2).GetText().Contains("%d"))
-            {
-                _codeBuilder.EmitInBuiltFunctionCall("int32");
+            // if (context.GetChild(2).GetText().Contains("%d"))
+            // {
+            //     _codeBuilder.EmitInBuiltFunctionCall("int32");
 
-            }
-            else if (context.GetChild(2).GetText().Contains("%s"))
-            {
-                _codeBuilder.EmitInBuiltFunctionCall("string");
+            // }
+            // else if (context.GetChild(2).GetText().Contains("%s"))
+            // {
+            //     _codeBuilder.EmitInBuiltFunctionCall("string");
 
-            }
-            else if (context.GetChild(2).GetText().Contains("%f"))
-            {
-                _codeBuilder.EmitInBuiltFunctionCall("float64");
-            }
+            // }
+            // else if (context.GetChild(2).GetText().Contains("%f"))
+            // {
+            //     _codeBuilder.EmitInBuiltFunctionCall("float64");
+            // }
 
+            _codeBuilder.EmitInBuiltFunctionCall(_codeBuilder.DataTypes[context.GetChild(2).GetText()]);
             return Value.VOID;
         }
         public override Value VisitBlock(CompileParser.BlockContext context)
@@ -113,7 +113,7 @@ namespace AntlrCodeGenerator
             var type = context.GetChild(0).GetText();
             _currentScope.assignParam(varName, Value.VOID);
 
-            _codeBuilder.LoadInstructions(2, _codeBuilder.EmitLocals(varName, type.ToInt32()));
+            _codeBuilder.LoadInstructions(2, _codeBuilder.EmitLocals(varName, type));
 
 
             return new Value(varName, type);
@@ -137,7 +137,7 @@ namespace AntlrCodeGenerator
             var variable = _currentScope.Resolve(identifier);
             if (variable != null)
             {
-                var type = variable.GetDataType();
+                  var type = variable.GetDataType();
                 if (_currentScope.LocalVariables.ContainsKey(identifier))
                 {
                     switch (type)
@@ -174,7 +174,7 @@ namespace AntlrCodeGenerator
         //vist function declration
         public override Value VisitFunctionDecl(CompileParser.FunctionDeclContext context)
         {
-            _main += _codeBuilder.GetCode();
+            _mainMethod += _codeBuilder.GetCode();
             var functionScope = new Scope(_currentScope, "function");
             _currentScope = functionScope;
             _currentScope.ReturnType = context.GetChild(6).GetText();
@@ -195,9 +195,9 @@ namespace AntlrCodeGenerator
              , _currentScope.LocalVariables.Select(x => x.Key).ToArray())); ;
 
             Visit(context.block());
-            _codeBuilder.LoadInstructions(2, "ret");
+            _codeBuilder.LoadInstructions(2, OpCodes.Ret);
             _codeBuilder.LoadInstructions(2, "}");
-            _fn += _codeBuilder.GetCode();
+            _methodBody += _codeBuilder.GetCode();
             _fns.Remove(currentFunctionCall);
             _currentScope = functionScope.Parent;
             functionScope = null;
@@ -249,7 +249,8 @@ namespace AntlrCodeGenerator
                     else
                     {
 
-                        functionArgument.Type = new Value(argumentValue).GetDataType();
+                       functionArgument.Type = new Value(argumentValue).GetDataType();
+                       
                     }
 
 
@@ -308,7 +309,7 @@ namespace AntlrCodeGenerator
         public override Value VisitStringExpression([NotNull] StringExpressionContext context)
         {
 
-            _codeBuilder.LoadInstructions(2, "ldstr ", context.GetText());
+            _codeBuilder.LoadInstructions(2, OpCodes.LdStr, context.GetText());
             return new Value(context.GetText());
         }
         public override Value VisitAddExpression([NotNull] AddExpressionContext context)
@@ -462,13 +463,10 @@ namespace AntlrCodeGenerator
         public override Value VisitNumberExpression(NumberExpressionContext ctx)
         {
 
-
-
-
             //type is float
             if (ctx.GetChild(0).GetText().Contains("."))
             {
-                _codeBuilder.LoadInstructions(2, "ldc.r4 ", ctx.GetChild(0).GetText());
+                _codeBuilder.LoadInstructions(2, OpCodes.LdFloat, ctx.GetChild(0).GetText());
             }
             else
             {
@@ -479,15 +477,12 @@ namespace AntlrCodeGenerator
             {
                 _codeBuilder.LoadInstructions(2, OpCodes.Ret);
             }
-            return new Value(ctx.Number().GetText(), ctx.GetChild(0).GetText());
+            return new Value(ctx.Number().GetText(), new Value(ctx.GetChild(0).GetText()).GetDataType());
 
         }
 
 
-        private string MakeLabel(int label)
-        {
-            return string.Format("IL_{0:x4}", label);
-        }
+
         public override Value VisitForStatement([NotNull] ForStatementContext context)
         {
 
@@ -509,10 +504,10 @@ namespace AntlrCodeGenerator
             _codeBuilder.LoadInstructions(2, _codeBuilder.EmitLocals(context.Identifier().GetText(), dateType));
             _codeBuilder.InitializeVariable(varName, start);
             //load start value
-            _labelPrev = MakeLabel(_labelCount);
+            _labelPrev = _codeBuilder.MakeLabel(_labelCount);
             _labelCount++;
             _codeBuilder.LoadInstructions(0, OpCodes.Br, _labelPrev);
-            string labelTo = MakeLabel(_labelCount);
+            string labelTo = _codeBuilder.MakeLabel(_labelCount);
             _labelCount++;
             _labelCount++;
 
@@ -537,7 +532,7 @@ namespace AntlrCodeGenerator
             _codeBuilder.LoadInstructions(0, "brtrue " + labelTo);
 
 
-            return new Value("int");
+            return new Value("int32");
 
         }
 
@@ -547,13 +542,13 @@ namespace AntlrCodeGenerator
 
 
             //generate lable for if elseif* else
-            string labelTo = MakeLabel(_labelCount);
+            string labelTo = _codeBuilder.MakeLabel(_labelCount);
             _labelCount++;
-            string labelElse = MakeLabel(_labelCount);
+            string labelElse = _codeBuilder.MakeLabel(_labelCount);
             _labelCount++;
-            string labelElseIf = MakeLabel(_labelCount);
+            string labelElseIf = _codeBuilder.MakeLabel(_labelCount);
             _labelCount++;
-            string labelEnd = MakeLabel(_labelCount);
+            string labelEnd = _codeBuilder.MakeLabel(_labelCount);
             _labelCount++;
 
             //emit if

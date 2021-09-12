@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 
 namespace AntlrCodeGenerator
@@ -9,7 +10,27 @@ namespace AntlrCodeGenerator
 
         public void Append(string code) => _result.Append(code);
 
-        public void Init()
+        //data type lookup
+        private Dictionary<string, string> _dataTypes = new Dictionary<string, string>(){
+
+            {"int", "int32"},
+            {"float", "float32"},
+            {"double", "float64"},
+            {"string", "string"},
+            {"bool", "bool"},
+            {"math","System.Random"},
+            {"%d","int32"},
+            {"%f","float32"},
+            {"%s","string"}
+
+
+        };
+
+        //expose doctype
+        public Dictionary<string, string> DataTypes => _dataTypes;
+
+
+        public void Init( )
         {
             LoadInstructions(0, ".assembly extern mscorlib\n{\n}\n");
             LoadInstructions(0, ".assembly " + "Program" + "\n{\n}\n\n.module " + "test" + ".exe\n");
@@ -74,6 +95,10 @@ namespace AntlrCodeGenerator
 
 
         }
+        public string MakeLabel(int label)
+        {
+            return string.Format("IL_{0:x4}", label);
+        }
         public void LoadInstructions(int space, string opcode, string valie)
         {
             AppendCodeLine(space, $"{opcode} {valie}");
@@ -86,7 +111,7 @@ namespace AntlrCodeGenerator
         {
             AppendCodeLine(2, $"call void [mscorlib]System.Console::WriteLine({type})");
         }
-        public string GetCode()
+        public string GetCode( )
         {
 
             var r = _result.ToString();
@@ -98,13 +123,8 @@ namespace AntlrCodeGenerator
         public void BuildMethod(string[] types, string[] parameters, string methodName, string returnType = "void")
         {
             var s = string.Empty;
-            if (returnType == "int")
-            {
-                returnType = "int32";
-            }
-            if(returnType == "float"){
-                returnType = "float32";
-            }
+            returnType = _dataTypes[returnType];
+
             s += $".method private hidebysig static {returnType}  {methodName}(";
             for (int i = 0; i < types.Length; ++i)
             {
@@ -137,16 +157,12 @@ namespace AntlrCodeGenerator
 
             return s + ")";
         }
-        //assignment
+
 
         public string EmitLocals(string parameter, string type)
         {
-            if(type == "int"){
-                type = "int32";
-            }
-            if(type == "float"){
-                type = "float32";
-            }
+
+            type = _dataTypes[type];
             string s = ".locals init ( ";
 
             s += type + " " + parameter;
@@ -156,10 +172,6 @@ namespace AntlrCodeGenerator
             return s + ")";
         }
 
-        internal void LoadInstructions(int v1, object ldStr, string v2)
-        {
-            throw new System.NotImplementedException();
-        }
 
         public void EmitHttpClientStart(string identifier)
         {
