@@ -16,10 +16,11 @@ namespace AntlrCodeGenerator.CodeGenerator
 
         public static string GetDataType(this Value value)
         {
-            if (value.ToFloat())
-                return "float32";
+
             if (value.IsNumber())
                 return "int32";
+            if (value.ToFloat())
+                return "float32";
             if (value.IsString())
                 return "string";
             if (value.Asbool())

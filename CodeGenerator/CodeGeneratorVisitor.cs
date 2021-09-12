@@ -125,22 +125,9 @@ namespace AntlrCodeGenerator
                 var type = variable.GetDataType();
                 if (_currentScope.LocalVariables.ContainsKey(identifier))
                 {
-                    switch (type)
-                    {
-                        case "int32":
-                            _codeBuilder.LoadInstructions(2, OpCodes.LdInt4, variable.ToString());
-                            break;
-                        case "string":
-                            _codeBuilder.LoadInstructions(2, OpCodes.LdStr, variable.ToString());
-                            break;
-                        case "float32":
-                            _codeBuilder.LoadInstructions(2, OpCodes.LdFloat, variable.ToString());
-                            break;
 
-                        default:
-                            _codeBuilder.LoadInstructions(2, OpCodes.LdArg, ctx.Identifier().GetText());
-                            break;
-                    }
+                    _codeBuilder.LoadInstructions(2, OpCodes.LdArg, ctx.Identifier().GetText());
+
                 }
 
                 else
@@ -228,7 +215,7 @@ namespace AntlrCodeGenerator
                     if (_currentScope.Resolve(argumentValue) != null)
                     {
                         var resolveValue = _currentScope.Resolve(argumentValue);
-                        functionArgument.Type = resolveValue.Type == null ? resolveValue.GetDataType() : resolveValue.Type;
+                        functionArgument.Type = resolveValue.Type == null ? resolveValue.GetDataType() : _codeBuilder.DataTypes[resolveValue.Type];
                         functionArgument.value = _currentScope.Resolve(argumentValue).value;
                     }
                     else
@@ -455,16 +442,16 @@ namespace AntlrCodeGenerator
             {
                 _codeBuilder.LoadInstructions(2, OpCodes.LdFloat, ctx.GetChild(0).GetText());
             }
-            else
+            else if (!ctx.GetChild(0).GetText().Contains("."))
             {
 
                 _codeBuilder.LoadInstructions(2, OpCodes.LdInt4, ctx.Number().GetText());
             }
-            if (ctx.Parent.GetChild(0).GetText() == "return")
+            else if (ctx.Parent.GetChild(0).GetText() == "return")
             {
                 _codeBuilder.LoadInstructions(2, OpCodes.Ret);
             }
-            return new Value(ctx.Number().GetText(), new Value(ctx.GetChild(0).GetText()).GetDataType());
+            return new Value(ctx.Number().GetText());
 
         }
 
