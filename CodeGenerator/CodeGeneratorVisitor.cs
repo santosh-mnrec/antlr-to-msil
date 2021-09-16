@@ -282,16 +282,13 @@ namespace AntlrCodeGenerator
                     if ((left.IsString()))
                     {
 
-
-
-
                         if (right.IsNumber())
                         {
                             _codeBuilder.LoadInstructions(2, "call instance  string [mscorlib]System.Int32::ToString()");
                         }
                         _codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
-                        return new Value(left.ToStr() + right.ToStr());
 
+                        return new Value(left.ToStr() + right.ToStr());
 
 
                     }
@@ -303,9 +300,9 @@ namespace AntlrCodeGenerator
                             _codeBuilder.LoadInstructions(2, "call instance  string [mscorlib]System.Int32::ToString()");
                         }
                         _codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
+
+                
                         return new Value(left.ToStr() + right.ToStr());
-
-
 
                     }
 
