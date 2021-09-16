@@ -251,7 +251,7 @@ namespace AntlrCodeGenerator
                     var left = this.Visit(context.expression(0));
                     var right = this.Visit(context.expression(1));
 
-                    //if both are ints
+                    //flat+float
                     if (left.ToFloat() && right.ToFloat())
                     {
 
@@ -265,7 +265,7 @@ namespace AntlrCodeGenerator
 
                     }
 
-                    //if both are ints
+                    //int+int
                     if (left.IsNumber() && right.IsNumber())
                     {
 
@@ -278,30 +278,34 @@ namespace AntlrCodeGenerator
                         };
 
                     }
-
-                    if ((left.IsString() || right.IsString()) || (right.IsNumber() || left.IsNumber()))
+                    // string+any
+                    if ((left.IsString()))
                     {
 
-                        if (left.Type == "int32" || right.Type == "int32")
-                        {
-                            _codeBuilder.LoadInstructions(2, OpCodes.Add);
-                            return new Value(left);
 
-                        }
-                        else
+
+
+                        if (right.IsNumber())
                         {
                             _codeBuilder.LoadInstructions(2, "call instance  string [mscorlib]System.Int32::ToString()");
-                            _codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
-                            return new Value(left.ToStr() + right.ToStr());
                         }
+                        _codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
+                        return new Value(left.ToStr() + right.ToStr());
+
 
 
                     }
-                    if (left.IsString() && right.IsString())
+                    if (right.IsString())
                     {
-                        _codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
 
+                        if (left.IsNumber())
+                        {
+                            _codeBuilder.LoadInstructions(2, "call instance  string [mscorlib]System.Int32::ToString()");
+                        }
+                        _codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
                         return new Value(left.ToStr() + right.ToStr());
+
+
 
                     }
 

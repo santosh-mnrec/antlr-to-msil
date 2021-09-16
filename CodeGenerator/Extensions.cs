@@ -8,8 +8,11 @@ namespace AntlrCodeGenerator.CodeGenerator
 
         public static void TryAddOrUpdate(this Dictionary<string, Value> dict, string key, Value value)
         {
-            if (dict.ContainsKey(key))
+            if (dict.ContainsKey(key)){
+                value.Type=value.GetDataType();
                 dict[key] = value;
+
+            }
             else
                 dict.Add(key, value);
         }
