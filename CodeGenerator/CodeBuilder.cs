@@ -6,11 +6,7 @@ namespace AntlrCodeGenerator
     public class CodeBuilder
     {
         private readonly StringBuilder _result = new StringBuilder();
-
-
         public void Append(string code) => _result.Append(code);
-
-        //data type lookup
         private Dictionary<string, string> _dataTypes = new Dictionary<string, string>(){
 
             {"int", "int32"},
@@ -25,8 +21,6 @@ namespace AntlrCodeGenerator
 
 
         };
-
-        //expose doctype
         public Dictionary<string, string> DataTypes => _dataTypes;
 
 
@@ -36,46 +30,40 @@ namespace AntlrCodeGenerator
             LoadInstructions(1, ".assembly " + "Program" + "\n{\n}\n\n.module " + "test" + ".exe\n");
             LoadInstructions(1, ".class private auto ansi beforefieldinit Program extends [System.Runtime]System.Object ");
             LoadInstructions(1, "{\n");
-            LoadInstructions(1, " .method private hidebysig static void  Main(string[] args) cil managed {");
-            LoadInstructions(2, " .entrypoint");
-            LoadInstructions(2, " .maxstack  8");
-            LoadInstructions(2, " .locals  init (class [System.Net.Http]System.Net.Http.HttpClient client)");
-            LoadInstructions(2, " .locals init (class [mscorlib]System.Exception e)");
-            LoadInstructions(2, " .try");
-            LoadInstructions(2, " {");
-
-
+            LoadInstructions(1, ".method private hidebysig static void  Main(string[] args) cil managed {");
+            LoadInstructions(1, ".entrypoint");
+            LoadInstructions(1, ".maxstack  8");
+            LoadInstructions(1, ".locals  init (class [System.Net.Http]System.Net.Http.HttpClient client)");
+            LoadInstructions(1, ".locals init (class [mscorlib]System.Exception e)");
+            LoadInstructions(1, ".try");
+            LoadInstructions(1, "{");
 
         }
 
-        public void EmitTryCatch(string labelTo)
+        public void EmitTry(string labelTo)
         {
 
-
-            AppendCodeLine(2, "nop");
-            AppendCodeLine(2, " leave.s " + labelTo);
-            AppendCodeLine(2, "}");
-
+            AppendCodeLine(2,"nop");
+            AppendCodeLine(2,"leave.s " + labelTo);
+            AppendCodeLine(1,"}");
         }
 
-        public void EmitCatchIL(string labelTo)
+        public void EmitCatch(string labelTo)
         {
 
-
-
-            AppendCodeLine(2, "catch [mscorlib]System.Exception");
-            AppendCodeLine(2, "{");
-            AppendCodeLine(2, "stloc.0");
-            AppendCodeLine(2, $" nop");
-            AppendCodeLine(2, "ldloc.0");
-            AppendCodeLine(2, "callvirt instance string [mscorlib]System.Exception::get_Message()");
-            AppendCodeLine(2, "call void [System.Console]System.Console::WriteLine(string)");
-            AppendCodeLine(2, "nop");
-            AppendCodeLine(2, "nop");
-            AppendCodeLine(2, "leave.s " + labelTo);
-            AppendCodeLine(2, "}");
-            AppendCodeLine(2, $"{labelTo}: ret");
-            AppendCodeLine(2, "}");
+            AppendCodeLine(1, "catch [mscorlib]System.Exception");
+            AppendCodeLine(1, "{");
+            AppendCodeLine(3, "stloc.0");
+            AppendCodeLine(3, $" nop");
+            AppendCodeLine(3, "ldloc.0");
+            AppendCodeLine(3, "callvirt instance string [mscorlib]System.Exception::get_Message()");
+            AppendCodeLine(3, "call void [System.Console]System.Console::WriteLine(string)");
+            AppendCodeLine(3, "nop");
+            AppendCodeLine(3, "nop");
+            AppendCodeLine(3, "leave.s " + labelTo);
+            AppendCodeLine(3, "}");
+            AppendCodeLine(3, $"{labelTo}: ret");
+            AppendCodeLine(1, "}");
 
         }
         private void AppendCodeLine(int pos, string code)
@@ -83,7 +71,7 @@ namespace AntlrCodeGenerator
 
             for (int i = 0; i < pos; i++)
             {
-                _result.Append(" ");
+                _result.Append("\t");
             }
             _result.AppendLine(code);
         }
@@ -113,63 +101,53 @@ namespace AntlrCodeGenerator
         }
         public string GetCode( )
         {
-
-            var r = _result.ToString();
+            var result = _result.ToString();
             _result.Clear();
-            return r;
+            return result;
         }
 
 
         public void BuildMethod(string[] types, string[] parameters, string methodName, string returnType = "void")
         {
-            var s = string.Empty;
+            var methodBody = string.Empty;
             returnType = _dataTypes[returnType];
-
-            s += $".method private hidebysig static {returnType}  {methodName}(";
+            methodBody += $".method private hidebysig static {returnType}  {methodName}(";
             for (int i = 0; i < types.Length; ++i)
             {
-                s += $"{types[i]} {parameters[i]}";
+                methodBody += $"{types[i]} {parameters[i]}";
                 if (i < parameters.Length - 1)
                 {
-                    s += ",";
+                    methodBody += ",";
                 }
             }
-            s += ") cil managed";
-
-            AppendCodeLine(3, s + "{");
+            methodBody += ") cil managed";
+            AppendCodeLine(1, methodBody + "{");
         }
 
         public string EmitLocals(string[] types, params string[] parameters)
         {
 
-            string s = ".locals init ( ";
+            string localInit = ".locals init ( ";
             for (int i = 0; i < parameters.Length; i++)
             {
-
                 var type = types[i];
-                s += $"{type} {parameters[i]}";
-
+                localInit += $"{type} {parameters[i]}";
                 if (i < parameters.Length - 1)
                 {
-                    s += ",";
+                    localInit += ",";
                 }
             }
 
-            return s + ")";
+            return localInit + ")";
         }
-
 
         public string EmitLocals(string parameter, string type)
         {
 
             type = _dataTypes[type];
-            string s = ".locals init ( ";
-
-            s += type + " " + parameter;
-
-
-
-            return s + ")";
+            var localInit = ".locals init ( ";
+            localInit += type + " " + parameter;
+            return localInit + ")";
         }
 
 

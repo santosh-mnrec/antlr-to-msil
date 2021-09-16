@@ -16,6 +16,9 @@ namespace AntlrCodeGenerator.CodeGenerator
 
         public static string GetDataType(this Value value)
         {
+            
+            //get data type from object value dictionary and action
+           
 
             if (value.IsNumber())
                 return "int32";

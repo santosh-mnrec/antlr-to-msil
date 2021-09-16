@@ -21,7 +21,7 @@ statement:
 	| forStatement
 	| ifStatement;   
 
-readFile: 'readFile' Identifier # HttpCall;
+readFile: 'readFile' Identifier # ReadFileCall;
 varDeclration: type Identifier;
 assignment: Identifier '=' expression;
 

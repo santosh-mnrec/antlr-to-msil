@@ -6,3 +6,6 @@ if_else_branch_style = always_if_else
 
 csharp_space_between_method_declaration_name_and_open_parenthesis=false
 csharp_space_between_method_declaration_empty_parameter_list_parentheses=true
+
+# S112: General exceptions should never be thrown
+dotnet_diagnostic.S112.severity = none

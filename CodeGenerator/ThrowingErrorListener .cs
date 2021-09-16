@@ -1,43 +1,33 @@
+
+using System;
+using System.IO;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
-using System.Collections.Generic;
-using System.IO;
+
 
 namespace AntlrCodeGenerator.CodeGenerator
+{
+
+    /// <summary>
+    /// This class is used to generate the code for the ErrorListener.
+    /// </summary>
+    //SOURCE: https://stackoverflow.com/questions/18132078/handling-errors-in-antlr4
+    public class DescriptiveErrorListener : BaseErrorListener, IAntlrErrorListener<int>
     {
-    public readonly struct SyntaxError
+        public static DescriptiveErrorListener Instance { get; } = new DescriptiveErrorListener();
+        public void SyntaxError(TextWriter output, IRecognizer recognizer, int offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
         {
-        public readonly IRecognizer Recognizer;
-        public readonly IToken OffendingSymbol;
-        public readonly int Line;
-        public readonly int CharPositionInLine;
-        public readonly string Message;
-        public readonly RecognitionException Exception;
-
-        public SyntaxError (IRecognizer recognizer, IToken offendingSymbol, int line,
-                           int charPositionInLine, string message, RecognitionException exception)
-            {
-            Recognizer = recognizer;
-            OffendingSymbol = offendingSymbol;
-            Line = line;
-            CharPositionInLine = charPositionInLine;
-            Message = message;
-            Exception = exception;
-            }
+            if (!REPORT_SYNTAX_ERRORS) return;
+            string sourceName = recognizer.InputStream.SourceName;
+            // never ""; might be "<unknown>" == IntStreamConstants.UnknownSourceName
+            sourceName = $"{sourceName}:{line}:{charPositionInLine}";
+            Console.Error.WriteLine($"{sourceName}: line {line}:{charPositionInLine} {msg}");
         }
-
-    public class SyntaxErrorListener : BaseErrorListener
+        public override void SyntaxError(TextWriter output, IRecognizer recognizer, [Nullable] IToken offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
         {
-        public readonly List<SyntaxError> Errors = new List<SyntaxError>();
-        public override void SyntaxError (TextWriter writer, [NotNull] IRecognizer recognizer, [Nullable] IToken offendingSymbol, int line, int charPositionInLine, [NotNull] string msg, [Nullable] RecognitionException e)
-            {
-            Errors.Add(new SyntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e));
-
-            throw new ParseCanceledException(Errors[0].Message);
-
-
-            }
-
+            this.SyntaxError(output, recognizer, 0, line, charPositionInLine, msg, e);
         }
-
+        static readonly bool REPORT_SYNTAX_ERRORS = true;
     }
+
+}
