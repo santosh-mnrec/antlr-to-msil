@@ -2,80 +2,61 @@ using System;
 
 namespace AntlrCodeGenerator
 {
-    public class Value : IComparable<Value>
+    public class SymbolTable : IComparable<SymbolTable>
 
     {
-        private const string @void = "VOID";
-        public static readonly Value VOID = new Value();
 
-
-        public  object value;
+        public static readonly SymbolTable Void = new SymbolTable();
+        public object Value;
         public string Type { get; set; }
-
-        public Value()
+        private SymbolTable()
         {
 
-            value = new object();
+            Value = new object();
             Type = "int32";
         }
-        public Value(object input)
+
+       
+
+        public SymbolTable(object input)
         {
-            value = input ?? throw new Exception("v == null");
+            Value = input ?? throw new Exception($"v == null");
 
             // only accept bool, list, number or string types
-            if (!(Isbool() || IsNumber() || IsString() || IsNull()))
-            {
-                var exception = new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
-                throw exception;
-            }
+            if (Isbool() || IsNumber() || IsString() || IsNull()) return;
+            var exception = new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
+            throw exception;
         }
-        public Value(object input, string type)
+        public SymbolTable(object input, string type)
         {
-            value = input ?? throw new Exception("v == null");
+            Value = input ?? throw new Exception("v == null");
             Type = type;
             // only accept bool, list, number or string types
-            if (!(Isbool() || IsNumber() || IsString() || IsNull()))
-            {
-                var exception = new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
-                throw exception;
-            }
+            if (Isbool() || IsNumber() || IsString() || IsNull()) return;
+            var exception = new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
+            throw exception;
         }
 
-        public bool Asbool()
+        public bool Isboolean()
         {
-            var result = false;
-            if (value is bool boolean)
-            {
-                result = boolean;
-                //Do something
-            }
-            else
-            {
-                //It's not a bool
-            }
-            return result;
+            if (!(Value is bool boolean)) return false;
+            return boolean;
         }
 
         public bool ToFloat()
         {
-          return float.TryParse(value.ToString(), out float result);
+          return float.TryParse(Value.ToString(), out float result);
         }
         public float IsFloat(){
-            return float.Parse(value.ToString());
+            return float.Parse(Value.ToString() ?? string.Empty);
             
         }
         public int ToInteger()
         {
-            return int.Parse(value.ToString());
+            return int.Parse(Value.ToString() ?? string.Empty);
         }
-
-
-
-        public string ToStr() => value.ToString();
-
-
-
-        public int CompareTo(Value that)
+        public string ToStr() => Value.ToString();
+        public int CompareTo(SymbolTable that)
         {
             if (that is null)
             {
@@ -84,30 +65,20 @@ namespace AntlrCodeGenerator
 
             if (IsNumber() && that.IsNumber())
             {
-                if (Equals(that))
-                {
-                    return 0;
-                }
-                else
-                {
-                    return ToFloat().CompareTo(that.ToFloat());
-                }
+                return Equals(that) ? 0 : ToFloat().CompareTo(that.ToFloat());
             }
-            else if (IsString() && that.IsString())
+
+            var exception = new Exception("illegal expression: can't compare `" + this + "` to `" + that + "`");
+            if (IsString() && that.IsString())
             {
-                return ToStr().CompareTo(that.ToStr());
+                return string.Compare(ToStr(), that.ToStr(), StringComparison.Ordinal);
             }
-            else
-            {
-                Exception exception = new Exception("illegal expression: can't compare `" + this + "` to `" + that + "`");
-                throw exception;
-            }
+
+            throw exception;
         }
-
-
         public override bool Equals(object o)
         {
-            if (this == VOID || o == VOID)
+            if (this == Void || o == Void)
             {
                 _ = new Exception("can't use VOID: " + this + " ==/!= " + o);
             }
@@ -119,62 +90,55 @@ namespace AntlrCodeGenerator
             {
                 return false;
             }
-            var that = (Value)o;
-            if (IsNumber() && that.IsNumber())
-            {
-                var result = ToFloat() == that.ToFloat();
-                return result;
+            var that = (SymbolTable)o;
+            if (!IsNumber() || !that.IsNumber()) return Value.Equals(that.Value);
+            var result = ToFloat() == that.ToFloat();
+            return result;
 
-            }
-            else
-            {
-                return value.Equals(that.value);
-            }
         }
 
 
 
         public override int GetHashCode()
         {
-            return value.GetHashCode();
+            return Value.GetHashCode();
         }
 
-        public bool Isbool()
+        private bool Isbool()
         {
-            return bool.TryParse(value.ToString(), out bool result);
+            return bool.TryParse(Value.ToString(), out bool result);
         }
 
         public bool IsNumber()
         {
             //can convert to int32
-            return int.TryParse(value.ToString(), out int result);
+            return int.TryParse(Value.ToString(), out var result);
 
 
         }
 
 
-
-        public bool IsNull()
+        private bool IsNull()
         {
-            return this == VOID;
+            return Equals(this, Void);
         }
 
-        public bool IsVoid()
+        private bool IsVoid()
         {
-            return this == VOID;
+            return Equals(this, Void);
         }
 
         public bool IsString()
         {
-            return value.ToString() != null;
+            return Value.ToString() != null;
         }
 
 
 
         public override string ToString()
         {
-            bool isVoid = IsVoid();
-            return IsNull() ? "NULL" : isVoid ? @void : value.ToString();
+            var isVoid = IsVoid();
+            return IsNull() ? "NULL" : isVoid ? "Void" : Value.ToString();
         }
     }
 }
