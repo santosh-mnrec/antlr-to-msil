@@ -6,9 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+   
     <PackageReference Include="Antlr4.Runtime.Standard" Version="4.9.2" />
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
     <PackageReference Include="StringTemplate4" Version="4.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="out\input.rs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

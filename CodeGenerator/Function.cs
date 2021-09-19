@@ -1,15 +1,13 @@
-using Antlr4.Runtime.Tree;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace AntlrCodeGenerator.CodeGenerator
+namespace AntlrCodeGenerator
 {
     public class Function
     {
 
         public string Name { get; set; }
 
-        public List<Value> Arguments { get; set; } = new List<Value>();
+        public List<Variable> Arguments { get; set; } = new List<Variable>();
 
     }
 }

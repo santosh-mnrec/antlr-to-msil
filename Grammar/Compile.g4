@@ -15,24 +15,24 @@ block: ( statement | functionDecl)* ('return' expression ';')?;
 
 statement:
 	readFile ';'
-	| varDeclration ';'
+	| varDeclaration ';'
 	| assignment ';'
 	| functionCall ';'  
 	| forStatement
 	| ifStatement;   
 
 readFile: 'readFile' Identifier # ReadFileCall;
-varDeclration: type Identifier;
+varDeclaration: type Identifier;
 assignment: Identifier '=' expression;
 
 functionCall:
 	Identifier '(' exprList? ')'					# identifierFunctionCall
-	| Println '(' typespecifier ',' expression? ')'	# printlnFunctionCall
-	| Print '(' typespecifier ',' expression? ')'	# printFunctionCall;
+	| Println '(' dataType ',' expression? ')'	# printlnFunctionCall
+	| Print '(' dataType ',' expression? ')'	# printFunctionCall;
 
 
 
-typespecifier: '%d' | '%s' |'%f';
+dataType: '%d' | '%s' |'%f';
 
 functionDecl:
 	'func' Identifier '(' idList? ')' '->' type '{' block '}';

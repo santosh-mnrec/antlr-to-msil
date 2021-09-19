@@ -2,34 +2,34 @@ using System;
 
 namespace AntlrCodeGenerator
 {
-    public class SymbolTable : IComparable<SymbolTable>
+    public class Variable : IComparable<Variable>
 
     {
 
-        public static readonly SymbolTable Void = new SymbolTable();
-        public object Value;
+        public static readonly Variable VOID = new Variable();
+        public object value;
         public string Type { get; set; }
-        private SymbolTable()
+        private Variable( )
         {
 
-            Value = new object();
+            value = new object();
             Type = "int32";
         }
 
-       
 
-        public SymbolTable(object input)
+
+        public Variable(object input)
         {
-            Value = input ?? throw new Exception($"v == null");
+            value = input ?? throw new Exception($"v == null");
 
             // only accept bool, list, number or string types
             if (Isbool() || IsNumber() || IsString() || IsNull()) return;
             var exception = new Exception("invalid data type: " + input + " (" + input.GetType() + ")");
             throw exception;
         }
-        public SymbolTable(object input, string type)
+        public Variable(object input, string type)
         {
-            Value = input ?? throw new Exception("v == null");
+            value = input ?? throw new Exception("v == null");
             Type = type;
             // only accept bool, list, number or string types
             if (Isbool() || IsNumber() || IsString() || IsNull()) return;
@@ -37,26 +37,27 @@ namespace AntlrCodeGenerator
             throw exception;
         }
 
-        public bool Isboolean()
+        public bool Isboolean( )
         {
-            if (!(Value is bool boolean)) return false;
+            if (!(value is bool boolean)) return false;
             return boolean;
         }
 
-        public bool ToFloat()
+        public bool ToFloat( )
         {
-          return float.TryParse(Value.ToString(), out float result);
+            return float.TryParse(value.ToString(), out float result);
         }
-        public float IsFloat(){
-            return float.Parse(Value.ToString() ?? string.Empty);
-            
-        }
-        public int ToInteger()
+        public float IsFloat( )
         {
-            return int.Parse(Value.ToString() ?? string.Empty);
+            return float.Parse(value.ToString() ?? string.Empty);
+
         }
-        public string ToStr() => Value.ToString();
-        public int CompareTo(SymbolTable that)
+        public int ToInteger( )
+        {
+            return int.Parse(value.ToString() ?? string.Empty);
+        }
+        public string ToStr( ) => value.ToString();
+        public int CompareTo(Variable that)
         {
             if (that is null)
             {
@@ -78,7 +79,7 @@ namespace AntlrCodeGenerator
         }
         public override bool Equals(object o)
         {
-            if (this == Void || o == Void)
+            if (this == VOID || o == VOID)
             {
                 _ = new Exception("can't use VOID: " + this + " ==/!= " + o);
             }
@@ -90,8 +91,8 @@ namespace AntlrCodeGenerator
             {
                 return false;
             }
-            var that = (SymbolTable)o;
-            if (!IsNumber() || !that.IsNumber()) return Value.Equals(that.Value);
+            var that = (Variable)o;
+            if (!IsNumber() || !that.IsNumber()) return value.Equals(that.value);
             var result = ToFloat() == that.ToFloat();
             return result;
 
@@ -99,46 +100,47 @@ namespace AntlrCodeGenerator
 
 
 
-        public override int GetHashCode()
+        public override int GetHashCode( )
         {
-            return Value.GetHashCode();
+            return value.GetHashCode();
         }
 
-        private bool Isbool()
+        private bool Isbool( )
         {
-            return bool.TryParse(Value.ToString(), out bool result);
+            return bool.TryParse(value.ToString(), out bool result);
         }
 
-        public bool IsNumber()
+        public bool IsNumber( )
         {
             //can convert to int32
-            return int.TryParse(Value.ToString(), out var result);
+            return int.TryParse(value.ToString(), out var result);
 
 
         }
 
 
-        private bool IsNull()
+        private bool IsNull( )
         {
-            return Equals(this, Void);
+            return Equals(this, VOID);
         }
 
-        private bool IsVoid()
+        private bool IsVoid( )
         {
-            return Equals(this, Void);
+            return Equals(this, VOID);
         }
 
-        public bool IsString()
+        public bool IsString( )
         {
-            return Value.ToString() != null;
+            return value.ToString() != null;
         }
 
 
 
-        public override string ToString()
+        //Override ToString() to return the value of the variable
+        public override string ToString( )
         {
-            var isVoid = IsVoid();
-            return IsNull() ? "NULL" : isVoid ? "Void" : Value.ToString();
+            return value.ToString();
         }
+        
     }
 }

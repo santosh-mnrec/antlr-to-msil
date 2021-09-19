@@ -1,39 +1,30 @@
-using System;
 using System.Collections.Generic;
 
-namespace AntlrCodeGenerator.CodeGenerator
+namespace AntlrCodeGenerator
 {
     public static class Extensions
     {
 
-        public static void TryAddOrUpdate(this Dictionary<string, Value> dict, string key, Value value)
+        public static void TryAddOrUpdate(this Dictionary<string, Variable> dict, string key, Variable variable)
         {
-            if (dict.ContainsKey(key)){
-                value.Type=value.GetDataType();
-                dict[key] = value;
+            if (dict != null && dict.ContainsKey(key)){
+                variable.Type=variable.GetDataType();
+                dict[key] = variable;
 
             }
             else
-                dict.Add(key, value);
+                dict?.Add(key, variable);
         }
 
-        public static string GetDataType(this Value value)
+        public static string GetDataType(this Variable variable)
         {
-            
-            //get data type from object value dictionary and action
-           
-
-            if (value.IsNumber())
+            if (variable.IsNumber())
                 return "int32";
-            if (value.ToFloat())
+            if (variable.ToFloat())
                 return "float32";
-            if (value.IsString())
+            if (variable.IsString())
                 return "string";
-            if (value.Asbool())
-                return "bool";
-
-            return "null";
-
+            return variable.Isboolean() ? "bool" : "null";
         }
 
 

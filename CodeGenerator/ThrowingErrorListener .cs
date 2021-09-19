@@ -4,22 +4,21 @@ using System.IO;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 
-
-namespace AntlrCodeGenerator.CodeGenerator
+namespace AntlrCodeGenerator
 {
 
     /// <summary>
     /// This class is used to generate the code for the ErrorListener.
     /// </summary>
     //SOURCE: https://stackoverflow.com/questions/18132078/handling-errors-in-antlr4
-    public class DescriptiveErrorListener : BaseErrorListener, IAntlrErrorListener<int>
+    public class DescriptiveErrorListener : BaseErrorListener,IAntlrErrorListener<int>
     {
-        public static DescriptiveErrorListener Instance { get; } = new DescriptiveErrorListener();
+        public static IAntlrErrorListener<IToken> Instance { get; } = new DescriptiveErrorListener();
+
         public void SyntaxError(TextWriter output, IRecognizer recognizer, int offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
         {
             if (!REPORT_SYNTAX_ERRORS) return;
             string sourceName = recognizer.InputStream.SourceName;
-            // never ""; might be "<unknown>" == IntStreamConstants.UnknownSourceName
             sourceName = $"{sourceName}:{line}:{charPositionInLine}";
             Console.Error.WriteLine($"{sourceName}: line {line}:{charPositionInLine} {msg}");
         }

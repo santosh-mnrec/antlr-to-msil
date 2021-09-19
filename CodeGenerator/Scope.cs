@@ -8,8 +8,8 @@ namespace AntlrCodeGenerator
     {
 
         public Scope Parent { get; set; }
-        public Dictionary<string, Value> Variables { get; set; }
-        public Dictionary<string, Value> LocalVariables { get; set; } = new Dictionary<string, Value>();
+        public Dictionary<string, Variable> Variables { get; set; }
+        public Dictionary<string, Variable> LocalVariables { get; set; } = new Dictionary<string, Variable>();
         public int ArgCount { get; set; }
         public string ScopeName { get; set; }
        
@@ -23,9 +23,9 @@ namespace AntlrCodeGenerator
 
         public Scope() : this(null, "global") { }
 
-        public void assignParam(string var, Value value)
+        public void assignParam(string var, Variable value)
         {
-            if (Variables.TryGetValue(var, out Value v))
+            if (Variables.TryGetValue(var, out Variable v))
             {
                 var oldValue = Variables[var];
                 //update the value of the variable
@@ -42,7 +42,7 @@ namespace AntlrCodeGenerator
         public Scope(Scope p, string scopeName)
         {
             Parent = p;
-            Variables = new Dictionary<string, Value>();
+            Variables = new Dictionary<string, Variable>();
             ScopeName = scopeName;
 
         }
@@ -65,10 +65,10 @@ namespace AntlrCodeGenerator
         public bool IsCurrentScope(string varname)
         {
 
-            return Variables.TryGetValue(varname, out Value value);
+            return Variables.TryGetValue(varname, out Variable value);
 
         }
-        public void Assign(string var, Value @value)
+        public void Assign(string var, Variable @value)
         {
             if (Resolve(@var, !IsScope(ScopeName)) != null)
             {
@@ -89,7 +89,7 @@ namespace AntlrCodeGenerator
 
 
 
-        private void ReAssign(string identifier, Value value)
+        private void ReAssign(string identifier, Variable value)
         {
             if (Variables.ContainsKey(identifier))
             {
@@ -104,12 +104,12 @@ namespace AntlrCodeGenerator
             }
         }
 
-        public Value Resolve(string var)
+        public Variable Resolve(string var)
         {
             return Resolve(var, true);
         }
 
-        private Value Resolve(string var, bool checkParent)
+        private Variable Resolve(string var, bool checkParent)
         {
             Variables.TryGetValue(@var, out var value);
 
