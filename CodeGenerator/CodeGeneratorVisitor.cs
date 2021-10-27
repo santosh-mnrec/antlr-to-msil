@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static CompileParser;
+using static BLanguageParser;
 
 namespace AntlrCodeGenerator
 {
 
-    public class CodeGeneratorVisitor : CompileBaseVisitor<Variable>
+    public class CodeGeneratorVisitor : BLanguageBaseVisitor<Variable>
     {
 
         private readonly CodeBuilder _codeBuilder = new CodeBuilder();
@@ -53,7 +53,7 @@ namespace AntlrCodeGenerator
             _codeBuilder.EmitInBuiltFunctionCall(_codeBuilder.DataTypes[context.GetChild(2).GetText()]);
             return Variable.VOID;
         }
-        public override Variable VisitBlock(CompileParser.BlockContext context)
+        public override Variable VisitBlock(BlockContext context)
         {
 
             foreach (var statement in context.statement())
@@ -91,7 +91,7 @@ namespace AntlrCodeGenerator
         }
 
         //visit assigment
-        public override Variable VisitAssignment(CompileParser.AssignmentContext context)
+        public override Variable VisitAssignment(AssignmentContext context)
         {
 
             var varName = context.Identifier().GetText();
@@ -124,7 +124,7 @@ namespace AntlrCodeGenerator
         }
 
         //vist function declration
-        public override Variable VisitFunctionDecl(CompileParser.FunctionDeclContext context)
+        public override Variable VisitFunctionDecl(FunctionDeclContext context)
         {
             _mainMethod += _codeBuilder.GetCode();
             var functionScope = new Scope(_currentScope, "function");
@@ -308,7 +308,7 @@ namespace AntlrCodeGenerator
 
                     break;
 
-                case CompileParser.Subtract:
+                case Subtract:
                     var l = Visit(context.expression(0));
                     var r = Visit(context.expression(1));
                     if (l.IsNumber() && r.IsNumber())
@@ -387,7 +387,7 @@ namespace AntlrCodeGenerator
             return Variable.VOID;
 
         }
-        public override Variable VisitExpressionExpression(CompileParser.ExpressionExpressionContext context)
+        public override Variable VisitExpressionExpression(ExpressionExpressionContext context)
         {
             Visit(context.expression());
             _currentScope.Assign(context.expression().GetChild(0).GetText(), new Variable(context.expression().GetChild(2).GetText()));

@@ -1,4 +1,4 @@
-grammar Compile;
+grammar BLanguage;
 
 @members {}
 @header { 
