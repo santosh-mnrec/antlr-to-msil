@@ -1,6 +1,6 @@
 using System;
 
-namespace AntlrCodeGenerator
+namespace BLanguageMSILGenerator
 {
     public class Variable : IComparable<Variable>
 

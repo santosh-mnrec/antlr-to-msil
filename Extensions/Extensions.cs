@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace AntlrCodeGenerator
+namespace BLanguageMSILGenerator
 {
     public static class Extensions
     {

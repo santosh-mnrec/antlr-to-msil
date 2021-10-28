@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 
-namespace AntlrCodeGenerator
+namespace BLanguageMSILGenerator
 {
     public class Function
     {
-
         public string Name { get; set; }
 
         public List<Variable> Arguments { get; set; } = new List<Variable>();

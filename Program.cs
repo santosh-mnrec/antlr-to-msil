@@ -1,7 +1,7 @@
 using System.IO;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
-using AntlrCodeGenerator.CodeGenerator;
+using BLanguageMSILGenerator;
 
 namespace AntlrCodeGenerator
 {
@@ -11,7 +11,7 @@ namespace AntlrCodeGenerator
         {
             try
             {
-                var text = File.ReadAllText(@"out\input.rs");
+                var text = File.ReadAllText(@"input.b");
                 var input = new AntlrInputStream(text);
                 Lexer lexer = new BLanguageLexer(input);
                 lexer.RemoveErrorListeners();
