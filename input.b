@@ -15,5 +15,5 @@ func fib(int a)->int {
 }
 
 int c;
-c=fib(5);
+c=fib(10);
 print(%d,c);

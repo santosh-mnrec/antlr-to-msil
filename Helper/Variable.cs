@@ -113,7 +113,7 @@ namespace BLanguageMSILGenerator
         public bool IsNumber( )
         {
             //can convert to int32
-            return int.TryParse(value.ToString(), out var result);
+            return int.TryParse(value.ToString(), out var result) || (Type=="int32");
 
 
         }
