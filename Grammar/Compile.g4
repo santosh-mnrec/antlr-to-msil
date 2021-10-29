@@ -82,7 +82,7 @@ Identifier: [a-zA-Z_] [a-zA-Z_0-9]*;
 
 String:
 	["] (~["\r\n\\] | '\\' ~[\r\n])* ["]
-	| ['] ( ~['\r\n\\] | '\\' ~[\r\n])* ['];
+	| ['] ( ~['\r\n\\] | '\\' ~[\r\n])* [''];
 Comment: ( '//' ~[\r\n]* | '/*' .*? '*/') -> skip;
 Space: [ \t\r\n\u000C] -> skip;
 fragment Int: [1-9] Digit* | '0';
