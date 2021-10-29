@@ -43,11 +43,18 @@ namespace BLanguageMSILGenerator
             _codeBuilder.EmitCatch(labelTo);
             _codeBuilder.LoadInstructions(2, _methodBody);
             var code = _moduleDefnition + _codeBuilder.GetCode() + "\n}";
-            File.WriteAllText(@"c:\temp\test.il", code);
+            File.WriteAllText(@"C:\Poc and Personal\BLanguageMSILGenerator\test.il", code);
             return Variable.VOID;
         }
 
         public override Variable VisitPrintlnFunctionCall([NotNull] PrintlnFunctionCallContext context)
+        {
+            Visit(context.expression());
+            _codeBuilder.EmitInBuiltFunctionCall(_codeBuilder.DataTypes[context.GetChild(2).GetText()]);
+            return Variable.VOID;
+        }
+
+        public override Variable VisitPrintFunctionCall([NotNull] PrintFunctionCallContext context)
         {
             Visit(context.expression());
             _codeBuilder.EmitInBuiltFunctionCall(_codeBuilder.DataTypes[context.GetChild(2).GetText()]);
@@ -300,7 +307,7 @@ namespace BLanguageMSILGenerator
                         }
                         _codeBuilder.LoadInstructions(2, "call string string::Concat(string,string)");
 
-                
+
                         return new Variable(left.ToStr() + right.ToStr());
 
                     }
