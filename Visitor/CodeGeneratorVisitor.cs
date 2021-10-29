@@ -50,14 +50,14 @@ namespace BLanguageMSILGenerator
         public override Variable VisitPrintlnFunctionCall([NotNull] PrintlnFunctionCallContext context)
         {
             Visit(context.expression());
-            _codeBuilder.EmitInBuiltFunctionCall(_codeBuilder.DataTypes[context.GetChild(2).GetText()]);
+            _codeBuilder.EmitInBuiltFunctionCall("WriteLine", _codeBuilder.DataTypes[context.GetChild(2).GetText()]);
             return Variable.VOID;
         }
 
         public override Variable VisitPrintFunctionCall([NotNull] PrintFunctionCallContext context)
         {
             Visit(context.expression());
-            _codeBuilder.EmitInBuiltFunctionCall(_codeBuilder.DataTypes[context.GetChild(2).GetText()]);
+            _codeBuilder.EmitInBuiltFunctionCall("Write", _codeBuilder.DataTypes[context.GetChild(2).GetText()]);
             return Variable.VOID;
         }
         public override Variable VisitBlock(BlockContext context)
@@ -258,7 +258,7 @@ namespace BLanguageMSILGenerator
                     var right = this.Visit(context.expression(1));
 
                     //flat+float
-                    if (left.ToFloat() && right.ToFloat())
+                    if (left.IsFloat() && right.IsFloat())
                     {
 
                         _codeBuilder.LoadInstructions(2, OpCodes.Add);
@@ -266,7 +266,7 @@ namespace BLanguageMSILGenerator
                         return left.Type switch
                         {
                             "float32" when right.Type == "float32" => new Variable(left),
-                            _ => new Variable(left.IsFloat() + right.IsFloat())
+                            _ => new Variable(left.ToFloat() + right.ToFloat())
                         };
 
                     }

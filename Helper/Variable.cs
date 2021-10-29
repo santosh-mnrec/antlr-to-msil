@@ -43,11 +43,11 @@ namespace BLanguageMSILGenerator
             return boolean;
         }
 
-        public bool ToFloat( )
+        public bool IsFloat( )
         {
             return float.TryParse(value.ToString(), out float result);
         }
-        public float IsFloat( )
+        public float ToFloat( )
         {
             return float.Parse(value.ToString() ?? string.Empty);
 
@@ -66,7 +66,7 @@ namespace BLanguageMSILGenerator
 
             if (IsNumber() && that.IsNumber())
             {
-                return Equals(that) ? 0 : ToFloat().CompareTo(that.ToFloat());
+                return Equals(that) ? 0 : IsFloat().CompareTo(that.IsFloat());
             }
 
             var exception = new Exception("illegal expression: can't compare `" + this + "` to `" + that + "`");
@@ -93,7 +93,7 @@ namespace BLanguageMSILGenerator
             }
             var that = (Variable)o;
             if (!IsNumber() || !that.IsNumber()) return value.Equals(that.value);
-            var result = ToFloat() == that.ToFloat();
+            var result = IsFloat() == that.IsFloat();
             return result;
 
         }

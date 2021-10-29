@@ -46,11 +46,7 @@ namespace BLanguageMSILGenerator
             ScopeName = scopeName;
 
         }
-        //is variable locally defined
-        public bool IsScopeDefined(string name)
-        {
-            return Variables.ContainsKey(name);
-        }
+       
         public void Assign(string var, Variable @value)
         {
             if (Resolve(@var, !IsScope(ScopeName)) != null)
@@ -69,8 +65,6 @@ namespace BLanguageMSILGenerator
         {
             return Parent == null;
         }
-
-
 
         private void ReAssign(string identifier, Variable value)
         {

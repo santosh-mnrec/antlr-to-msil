@@ -20,7 +20,7 @@ namespace BLanguageMSILGenerator
         {
             if (variable.IsNumber())
                 return "int32";
-            if (variable.ToFloat())
+            if (variable.IsFloat())
                 return "float32";
             if (variable.IsString())
                 return "string";

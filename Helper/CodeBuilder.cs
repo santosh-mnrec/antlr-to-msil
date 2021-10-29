@@ -95,9 +95,9 @@ namespace BLanguageMSILGenerator
         {
             AppendCodeLine(space, $"{valie}");
         }
-        public void EmitInBuiltFunctionCall(string type)
+        public void EmitInBuiltFunctionCall(string functionName,string type)
         {
-            AppendCodeLine(2, $"call void [mscorlib]System.Console::WriteLine({type})");
+            AppendCodeLine(2, $"call void [mscorlib]System.Console::{functionName}({type})");
         }
         public string GetCode( )
         {
