@@ -1,7 +1,7 @@
 using System.IO;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
-using AntlrCodeGenerator.CodeGenerator;
+using BLanguageMSILGenerator;
 
 namespace AntlrCodeGenerator
 {
@@ -15,9 +15,8 @@ namespace AntlrCodeGenerator
                 var input = new AntlrInputStream(text);
                 Lexer lexer = new BLanguageLexer(input);
                 lexer.RemoveErrorListeners();
-                //lexer.AddErrorListener(DescriptiveErrorListener.Instance);
                 CommonTokenStream tokens = new CommonTokenStream(lexer);
-                var parser = new BLanguageParser(tokens);
+                var parser = new  BLanguageParser(tokens);
                 parser.RemoveErrorListeners();
                 parser.AddErrorListener(DescriptiveErrorListener.Instance);
                 var tree = parser.parse();

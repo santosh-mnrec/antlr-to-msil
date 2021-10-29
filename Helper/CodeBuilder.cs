@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AntlrCodeGenerator
+namespace BLanguageMSILGenerator
 {
     public class CodeBuilder
     {

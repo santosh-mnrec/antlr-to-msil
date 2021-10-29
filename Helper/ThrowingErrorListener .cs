@@ -4,7 +4,7 @@ using System.IO;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 
-namespace AntlrCodeGenerator
+namespace BLanguageMSILGenerator
 {
 
     /// <summary>

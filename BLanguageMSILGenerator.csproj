@@ -13,6 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="input.b">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="out\input.rs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

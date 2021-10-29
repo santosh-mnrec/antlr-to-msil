@@ -93,10 +93,10 @@ parse
 block
 statement
 readFile
-varDeclration
+varDeclaration
 assignment
 functionCall
-typespecifier
+dataType
 functionDecl
 forStatement
 ifStatement

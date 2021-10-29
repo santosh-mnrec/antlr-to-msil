@@ -1,4 +1,4 @@
-namespace AntlrCodeGenerator.CodeGenerator
+namespace BLanguageMSILGenerator.CodeGenerator
 {
     public static class OpCodes
     {

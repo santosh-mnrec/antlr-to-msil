@@ -1,13 +1,13 @@
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
-using AntlrCodeGenerator.CodeGenerator;
+using BLanguageMSILGenerator.CodeGenerator;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using static BLanguageParser;
 
-namespace AntlrCodeGenerator
+namespace BLanguageMSILGenerator
 {
 
     public class CodeGeneratorVisitor : BLanguageBaseVisitor<Variable>
@@ -23,7 +23,7 @@ namespace AntlrCodeGenerator
         private string _labelPrev = "";
         private Scope _currentScope = new Scope();
 
-        private readonly List<Function> _fns = new List<Function>();
+        private readonly List<Function> _functions = new List<Function>();
 
         public CodeGeneratorVisitor( )
         {
@@ -85,7 +85,7 @@ namespace AntlrCodeGenerator
 
             var varName = context.Identifier().GetText();
             var type = context.GetChild(0).GetText();
-            _currentScope.assignParam(varName, Variable.VOID);
+            _currentScope.AssignParameter(varName, Variable.VOID);
             _codeBuilder.LoadInstructions(1, _codeBuilder.EmitLocals(varName, type));
             return new Variable(varName, type);
         }
@@ -108,7 +108,6 @@ namespace AntlrCodeGenerator
             var variable = _currentScope.Resolve(identifier);
             if (variable != null)
             {
-                var type = variable.GetDataType();
                 if (_currentScope.LocalVariables.ContainsKey(identifier))
                 {
                     _codeBuilder.LoadInstructions(2, OpCodes.LdArg, ctx.Identifier().GetText());
@@ -130,13 +129,13 @@ namespace AntlrCodeGenerator
             var functionScope = new Scope(_currentScope, "function");
             _currentScope = functionScope;
             _currentScope.ReturnType = context.GetChild(6).GetText();
-            var currentFunctionCall = _fns.FirstOrDefault(fn => fn.Name == context.Identifier().GetText());
+            var currentFunctionCall = _functions.FirstOrDefault(fn => fn.Name == context.Identifier().GetText());
             var @params = context.idList() != null ? context.idList().Identifier() : new List<ITerminalNode>().ToArray();
             if (currentFunctionCall != null)
             {
                 for (int i = 0; i < @params.Length; ++i)
                 {
-                    _currentScope.assignParam(@params[i]?.GetText(), new Variable(currentFunctionCall.Arguments[i].value, currentFunctionCall.Arguments[i].Type));
+                    _currentScope.AssignParameter(@params[i]?.GetText(), new Variable(currentFunctionCall.Arguments[i].value, currentFunctionCall.Arguments[i].Type));
                     _currentScope.LocalVariables.Add(@params[i].GetText(), new Variable(currentFunctionCall.Arguments[i].value, currentFunctionCall.Arguments[i].Type));
 
                 }
@@ -152,7 +151,7 @@ namespace AntlrCodeGenerator
             _codeBuilder.LoadInstructions(2, OpCodes.Ret);
             _codeBuilder.LoadInstructions(2, "}");
             _methodBody += _codeBuilder.GetCode();
-            _fns.Remove(currentFunctionCall);
+            _functions.Remove(currentFunctionCall);
             _currentScope = functionScope.Parent;
 
             return Variable.VOID;
@@ -170,9 +169,9 @@ namespace AntlrCodeGenerator
         {
             Function currentFn;
             var value = Variable.VOID;
-            var isRecursive = _fns.Any(x => x.Name == ctx.Identifier().GetText());
+            var isRecursive = _functions.Any(x => x.Name == ctx.Identifier().GetText());
             currentFn = isRecursive
-                ? _fns.FirstOrDefault(fn => fn.Name == ctx.Identifier().GetText())
+                ? _functions.FirstOrDefault(fn => fn.Name == ctx.Identifier().GetText())
                 : new Function { Name = ctx.Identifier().GetText() };
 
             if (ctx.exprList() == null || isRecursive)
@@ -213,7 +212,7 @@ namespace AntlrCodeGenerator
 
 
             }
-            _fns.Add(currentFn);
+            _functions.Add(currentFn);
             return value;
 
         }

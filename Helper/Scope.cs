@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
-using AntlrCodeGenerator.CodeGenerator;
+using BLanguageMSILGenerator.CodeGenerator;
 
-namespace AntlrCodeGenerator
+namespace BLanguageMSILGenerator
 {
     public class Scope
     {
@@ -23,7 +23,7 @@ namespace AntlrCodeGenerator
 
         public Scope() : this(null, "global") { }
 
-        public void assignParam(string var, Variable value)
+        public void AssignParameter(string var, Variable value)
         {
             if (Variables.TryGetValue(var, out Variable v))
             {
@@ -47,26 +47,9 @@ namespace AntlrCodeGenerator
 
         }
         //is variable locally defined
-        public bool isDefined(string name)
+        public bool IsScopeDefined(string name)
         {
             return Variables.ContainsKey(name);
-        }
-        //is variable defined in parent scope
-        public bool isDefinedInParent(string name)
-        {
-            if (Parent == null)
-
-                return false;
-            return Parent.isDefined(name);
-
-        }
-
-
-        public bool IsCurrentScope(string varname)
-        {
-
-            return Variables.TryGetValue(varname, out Variable value);
-
         }
         public void Assign(string var, Variable @value)
         {
