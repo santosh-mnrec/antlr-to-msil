@@ -11,13 +11,13 @@ namespace AntlrCodeGenerator
         {
             try
             {
-                var text = File.ReadAllText(@"out\input.rs");
+                var text = File.ReadAllText(@"input.b");
                 var input = new AntlrInputStream(text);
-                Lexer lexer = new CompileLexer(input);
+                Lexer lexer = new BLanguageLexer(input);
                 lexer.RemoveErrorListeners();
                 //lexer.AddErrorListener(DescriptiveErrorListener.Instance);
                 CommonTokenStream tokens = new CommonTokenStream(lexer);
-                var parser = new CompileParser(tokens);
+                var parser = new BLanguageParser(tokens);
                 parser.RemoveErrorListeners();
                 parser.AddErrorListener(DescriptiveErrorListener.Instance);
                 var tree = parser.parse();
