@@ -78,8 +78,8 @@ namespace BLanguageMSILGenerator
         public void InitializeVariable(string variableName, string value)
         {
             Append("stloc " + variableName + "\n");
-            Append("ldc.i4 " + value + "\n");
-            Append("stloc " + variableName + "\n");
+           // Append("ldc.i4 " + value + "\n");
+          //  Append("stloc " + variableName + "\n");
 
 
         }

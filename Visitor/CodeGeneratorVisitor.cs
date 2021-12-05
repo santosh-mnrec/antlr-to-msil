@@ -20,7 +20,7 @@ namespace BLanguageMSILGenerator
         private readonly string _moduleDefnition = "";
         //visit for loop
         private int _labelCount = 0;
-        private string _labelPrev = "";
+        private string _decisionLabel = "";
         private Scope _currentScope = new Scope();
 
         private readonly List<Function> _functions = new List<Function>();
@@ -43,7 +43,7 @@ namespace BLanguageMSILGenerator
             _codeBuilder.EmitCatch(labelTo);
             _codeBuilder.LoadInstructions(2, _methodBody);
             var code = _moduleDefnition + _codeBuilder.GetCode() + "\n}";
-            File.WriteAllText(@"C:\Poc and Personal\BLanguageMSILGenerator\test.il", code);
+            File.WriteAllText(@"C:\temp\test.il", code);
             return Variable.VOID;
         }
 
@@ -148,14 +148,13 @@ namespace BLanguageMSILGenerator
                 }
 
 
-                _currentScope.ArgCount = @params.Length;
+              //  _currentScope.ArgCount = @params.Length;
                 _codeBuilder.BuildMethod(currentFunctionCall.Arguments.Select(x => x.Type).ToArray(),
                 _currentScope.LocalVariables.Select(x => x.Key).ToArray(), context.Identifier().GetText(), _currentScope.ReturnType);
                 _codeBuilder.LoadInstructions(2, _codeBuilder.EmitLocals(currentFunctionCall.Arguments.Select(x => x.Type).ToArray()
                  , _currentScope.LocalVariables.Select(x => x.Key).ToArray())); ;
             }
             Visit(context.block());
-            _codeBuilder.LoadInstructions(2, OpCodes.Ret);
             _codeBuilder.LoadInstructions(2, "}");
             _methodBody += _codeBuilder.GetCode();
             _functions.Remove(currentFunctionCall);
@@ -439,9 +438,9 @@ namespace BLanguageMSILGenerator
             _codeBuilder.LoadInstructions(1, _codeBuilder.EmitLocals(context.Identifier().GetText(), dateType));
             _codeBuilder.InitializeVariable(varName, start);
             //load start value
-            _labelPrev = _codeBuilder.MakeLabel(_labelCount);
+            _decisionLabel = _codeBuilder.MakeLabel(_labelCount);
             _labelCount++;
-            _codeBuilder.LoadInstructions(0, OpCodes.Br, _labelPrev);
+            _codeBuilder.LoadInstructions(0, OpCodes.Br, _decisionLabel);
             string labelTo = _codeBuilder.MakeLabel(_labelCount);
             _labelCount++;
             _labelCount++;
@@ -453,7 +452,7 @@ namespace BLanguageMSILGenerator
             Visit(context.block());
             _codeBuilder.LoadInstructions(2, OpCodes.Add);
             _codeBuilder.LoadInstructions(2, "stloc ", varName);
-            _codeBuilder.LoadInstructions(0, _labelPrev + ":");
+            _codeBuilder.LoadInstructions(0, _decisionLabel + ":");
             _codeBuilder.LoadInstructions(2, "ldloc " + varName);
             Visit(context.expression(1));
             //compare
