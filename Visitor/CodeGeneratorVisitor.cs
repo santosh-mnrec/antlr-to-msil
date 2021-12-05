@@ -148,7 +148,7 @@ namespace BLanguageMSILGenerator
                 }
 
 
-              //  _currentScope.ArgCount = @params.Length;
+                //  _currentScope.ArgCount = @params.Length;
                 _codeBuilder.BuildMethod(currentFunctionCall.Arguments.Select(x => x.Type).ToArray(),
                 _currentScope.LocalVariables.Select(x => x.Key).ToArray(), context.Identifier().GetText(), _currentScope.ReturnType);
                 _codeBuilder.LoadInstructions(2, _codeBuilder.EmitLocals(currentFunctionCall.Arguments.Select(x => x.Type).ToArray()
@@ -253,9 +253,16 @@ namespace BLanguageMSILGenerator
             switch (context.op.Type)
             {
                 case Add:
+
                     var left = this.Visit(context.expression(0));
                     var right = this.Visit(context.expression(1));
+                    if (_currentScope.ReturnType == "int")
+                    {
 
+                        //call add
+                        _codeBuilder.LoadInstructions(2, OpCodes.Add);
+                        return new Variable("int");
+                    }
                     //flat+float
                     if (left.IsFloat() && right.IsFloat())
                     {

@@ -1,17 +1,15 @@
-func fact(int n)->int{
-
-    int f;
-    f=1;
-    for i=1 to n {
-
-        f=f*i;
+func fib(int n) ->int{
+    if (n == 0) {
+        return 0;
     }
-    return f;
+    else if (n == 1) {
+        return 1;
     }
-
+    else{
+    return fib(n-1) + fib(n-2);
+    }
+}
 
 int result;
-result=fact(5);
-
-print(%d,result);
-
+result = fib(10);
+print(%d, result);
