@@ -10,7 +10,7 @@ namespace BLanguageMSILGenerator
         public Scope Parent { get; set; }
         public Dictionary<string, Variable> Variables { get; set; }
         public Dictionary<string, Variable> LocalVariables { get; set; } = new Dictionary<string, Variable>();
-        public int ArgCount { get; set; }
+      
         public string ScopeName { get; set; }
        
         public string ReturnType { get; set; }
@@ -39,25 +39,25 @@ namespace BLanguageMSILGenerator
 
         }
 
-        public Scope(Scope p, string scopeName)
+        public Scope(Scope scope, string scopeName)
         {
-            Parent = p;
+            Parent = scope;
             Variables = new Dictionary<string, Variable>();
             ScopeName = scopeName;
 
         }
        
-        public void Assign(string var, Variable @value)
+        public void Assign(string variableName, Variable @value)
         {
-            if (Resolve(@var, !IsScope(ScopeName)) != null)
+            if (Resolve(variableName, !IsScope(ScopeName)) != null)
             {
                 // There is already such a variable, re-assign it
-                this.ReAssign(@var, @value);
+                this.ReAssign(variableName, @value);
             }
             else
             {
                 // A newly declared variable
-                Variables.TryAdd(var, value);
+                Variables.TryAdd(variableName, value);
             }
         }
 
@@ -70,13 +70,12 @@ namespace BLanguageMSILGenerator
         {
             if (Variables.ContainsKey(identifier))
             {
-                // The variable is declared in this scope
+               
                 Variables.TryAddOrUpdate(identifier, value);
             }
             else if (Parent != null)
             {
-                // The variable was not declared in this scope, so let
-                // the parent scope re-assign it
+              
                 Parent.ReAssign(identifier, value);
             }
         }
@@ -97,12 +96,12 @@ namespace BLanguageMSILGenerator
             }
             else if (checkParent && !IsGlobalScope())
             {
-                // Let the parent scope look for the variable
+               
                 return Parent.Resolve(var, !Parent.IsScope(ScopeName));
             }
             else
             {
-                // Unknown variable
+               
                 return null;
             }
         }

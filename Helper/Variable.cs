@@ -7,17 +7,14 @@ namespace BLanguageMSILGenerator
     {
 
         public static readonly Variable VOID = new Variable();
-        public object value;
-        public string Type { get; set; }
+        public object value {get;set;}
+        public string Type { get; set; }="int";
         private Variable( )
         {
 
             value = new object();
-            Type = "int32";
+           
         }
-
-
-
         public Variable(object input)
         {
             value = input ?? throw new Exception($"v == null");
@@ -98,8 +95,6 @@ namespace BLanguageMSILGenerator
 
         }
 
-
-
         public override int GetHashCode( )
         {
             return value.GetHashCode();
@@ -124,19 +119,12 @@ namespace BLanguageMSILGenerator
             return Equals(this, VOID);
         }
 
-        private bool IsVoid( )
-        {
-            return Equals(this, VOID);
-        }
 
         public bool IsString( )
         {
             return value.ToString() != null;
         }
-
-
-
-        //Override ToString() to return the value of the variable
+       
         public override string ToString( )
         {
             return value.ToString();
