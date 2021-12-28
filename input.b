@@ -1,15 +1,13 @@
-func fib(int n) ->int{
-    if (n == 0) {
+
+
+func fib(int a)->int{
+    if(a==0){
         return 0;
     }
-    else if (n == 1) {
+    if(a==1){
         return 1;
     }
-    else{
-    return fib(n-1) + fib(n-2);
-    }
+    return fib(a-1)+fib(a-2);
 }
 
-int result;
-result = fib(10);
-print(%d, result);
+print(%d,fib(10));

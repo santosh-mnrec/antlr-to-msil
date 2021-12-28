@@ -43,7 +43,7 @@ namespace BLanguageMSILGenerator
             _codeBuilder.EmitCatch(labelTo);
             _codeBuilder.LoadInstructions(2, _methodBody);
             var code = _moduleDefnition + _codeBuilder.GetCode() + "\n}";
-            File.WriteAllText(@"C:\temp\test.il", code);
+            File.WriteAllText(@".\Program.il", code);
             return Variable.VOID;
         }
 
